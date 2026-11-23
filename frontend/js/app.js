@@ -99,6 +99,27 @@ function reopenIntroScreen() {
     }
 }
 
+// 🔐 Farmer Portal Login Modal Controls
+function openLoginModal() {
+    const modal = document.getElementById("login-modal");
+    if (modal) modal.classList.remove("hidden");
+}
+
+function closeLoginModal() {
+    const modal = document.getElementById("login-modal");
+    if (modal) modal.classList.add("hidden");
+}
+
+function handleLogin(e) {
+    if (e) e.preventDefault();
+    const loginBtn = document.getElementById("nav-login-btn");
+    if (loginBtn) {
+        loginBtn.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600"></i><span>Farmer Active</span>`;
+        loginBtn.classList.add("border-emerald-300", "bg-emerald-50");
+    }
+    closeLoginModal();
+}
+
 // Load custom crops from localStorage
 function loadSavedCrops() {
     try {
