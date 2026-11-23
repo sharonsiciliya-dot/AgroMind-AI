@@ -2,15 +2,17 @@
 
 let currentReportData = null;
 let selectedCropName = "Rice";
+let activeFilter = "all";
 
-// Default commodities list
+// Default commodities list with categories and water needs
 let availableCrops = [
-    { name: "Rice", icon: "🍚" },
-    { name: "Corn / Maize", icon: "🌽" },
-    { name: "Wheat", icon: "🌾" },
-    { name: "Cotton", icon: "☁️" },
-    { name: "Tomato", icon: "🍅" },
-    { name: "Potato", icon: "🥔" }
+    { name: "Rice", icon: "🍚", category: "grains", water_need: "High" },
+    { name: "Corn / Maize", icon: "🌽", category: "grains", water_need: "Medium" },
+    { name: "Wheat", icon: "🌾", category: "grains", water_need: "Medium" },
+    { name: "Cotton", icon: "☁️", category: "cash", water_need: "Medium" },
+    { name: "Tomato", icon: "🍅", category: "vegetables", water_need: "Medium" },
+    { name: "Potato", icon: "🥔", category: "vegetables", water_need: "Medium" },
+    { name: "Olive", icon: "🫒", category: "cash", water_need: "Low" }
 ];
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -75,24 +77,59 @@ async function fetchBackendCrops() {
             if (data.crops && data.crops.length > 0) {
                 data.crops.forEach(c => {
                     if (!availableCrops.some(existing => existing.name.toLowerCase() === c.name.toLowerCase())) {
-                        availableCrops.push({ name: c.name, icon: c.icon || "🌱" });
+                        availableCrops.push({
+                            name: c.name,
+                            icon: c.icon || "🌱",
+                            category: "vegetables",
+                            water_need: c.water_need || "Medium"
+                        });
                     }
                 });
                 renderCommodityGrid();
             }
         }
-    } catch (e) {
-        // Fallback to defaults
-    }
+    } catch (e) {}
 }
 
-// Render dynamic commodity buttons
+// 🏷️ Filter commodities by category or water demand
+function filterCommodities(filterType) {
+    activeFilter = filterType;
+
+    // Update filter pill UI
+    document.querySelectorAll(".filter-pill").forEach(pill => {
+        if (pill.getAttribute("data-filter") === filterType) {
+            pill.className = "filter-pill px-3 py-1 rounded-full font-bold bg-agro-700 text-white flex-shrink-0 transition";
+        } else {
+            pill.className = "filter-pill px-3 py-1 rounded-full font-medium bg-white text-slate-600 border border-slate-200 hover:border-agro-400 hover:text-agro-700 flex-shrink-0 transition";
+        }
+    });
+
+    renderCommodityGrid();
+}
+
+// Render dynamic commodity buttons matching active filter
 function renderCommodityGrid() {
     const grid = document.getElementById("commodity-grid");
     if (!grid) return;
 
+    let filtered = availableCrops;
+    if (activeFilter === "grains") {
+        filtered = availableCrops.filter(c => c.category === "grains");
+    } else if (activeFilter === "vegetables") {
+        filtered = availableCrops.filter(c => c.category === "vegetables");
+    } else if (activeFilter === "cash") {
+        filtered = availableCrops.filter(c => c.category === "cash");
+    } else if (activeFilter === "low_water") {
+        filtered = availableCrops.filter(c => c.water_need === "Low");
+    } else if (activeFilter === "high_water") {
+        filtered = availableCrops.filter(c => c.water_need === "High");
+    }
+
+    const badge = document.getElementById("crop-count-badge");
+    if (badge) badge.innerText = `${filtered.length} items`;
+
     let html = "";
-    availableCrops.forEach(c => {
+    filtered.forEach(c => {
         const isSelected = (c.name.toLowerCase() === selectedCropName.toLowerCase());
         const borderClass = isSelected ? "border-agro-500 bg-agro-50 border-2" : "border-slate-200 bg-white hover:border-agro-300";
         const cleanDisplayName = c.name.split("/")[0].trim();
@@ -104,15 +141,68 @@ function renderCommodityGrid() {
         `;
     });
 
-    // Add "+ Add" shortcut button at the end
+    // Add "+ Add" shortcut button
     html += `
-        <button onclick="openAddCropModal()" class="flex flex-col items-center justify-center p-2 rounded-xl border-2 border-dashed border-agro-300 bg-agro-50/50 hover:bg-agro-100/50 text-agro-700 transition">
+        <button onclick="openAddCropModal()" title="Add custom crop" class="flex flex-col items-center justify-center p-2 rounded-xl border-2 border-dashed border-agro-300 bg-agro-50/50 hover:bg-agro-100/50 text-agro-700 transition">
             <span class="text-base"><i class="fa-solid fa-plus"></i></span>
             <span class="text-[10px] font-bold mt-0.5">Add</span>
         </button>
     `;
 
     grid.innerHTML = html;
+}
+
+// 📍 Location Dropdown Handler
+function handleLocationSelect(locationName) {
+    if (!locationName) return;
+    document.getElementById("input-location").value = locationName;
+    const searchInput = document.getElementById("universal-search-input");
+    if (searchInput) searchInput.value = locationName;
+    runAdvisory();
+}
+
+// 🛰️ GPS Auto-Detect Location
+function detectGPSLocation() {
+    const gpsBtn = document.getElementById("gps-btn");
+    if (!navigator.geolocation) {
+        alert("Geolocation is not supported by your browser.");
+        return;
+    }
+
+    if (gpsBtn) {
+        gpsBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-agro-600"></i><span>Locating...</span>`;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+        async (position) => {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+            try {
+                // Reverse geocode with Open-Meteo or BigDataCloud
+                const geoResp = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`);
+                if (geoResp.ok) {
+                    const geoData = await geoResp.json();
+                    const detectedCity = geoData.city || geoData.locality || geoData.principalSubdivision || "Mangaluru";
+                    document.getElementById("input-location").value = detectedCity;
+                    const searchInput = document.getElementById("universal-search-input");
+                    if (searchInput) searchInput.value = detectedCity;
+                    runAdvisory();
+                } else {
+                    document.getElementById("input-location").value = "Mangaluru";
+                    runAdvisory();
+                }
+            } catch (err) {
+                runAdvisory();
+            } finally {
+                if (gpsBtn) gpsBtn.innerHTML = `<i class="fa-solid fa-crosshairs text-agro-600"></i><span class="hidden sm:inline">GPS Auto</span>`;
+            }
+        },
+        (error) => {
+            if (gpsBtn) gpsBtn.innerHTML = `<i class="fa-solid fa-crosshairs text-agro-600"></i><span class="hidden sm:inline">GPS Auto</span>`;
+            alert("Unable to retrieve your location. Please select a region from the dropdown.");
+        },
+        { timeout: 8000 }
+    );
 }
 
 // Modal functions for adding a new crop
@@ -177,7 +267,7 @@ async function submitNewCrop() {
     }
 
     // 2. Add to local list and localStorage
-    const newCropObj = { name: name, icon: icon };
+    const newCropObj = { name: name, icon: icon, category: "vegetables", water_need: water };
     if (!availableCrops.some(c => c.name.toLowerCase() === name.toLowerCase())) {
         availableCrops.push(newCropObj);
         try {
@@ -318,7 +408,7 @@ async function runAdvisory() {
         }
         if (searchBtn) {
             searchBtn.disabled = false;
-            searchBtn.innerHTML = `<i class="fa-solid fa-bolt text-amber-300"></i><span>Analyze</span>`;
+            searchBtn.innerHTML = `<i class="fa-solid fa-bolt text-amber-300"></i><span>Search</span>`;
         }
     }
 }
@@ -481,7 +571,7 @@ async function sendChatMessage() {
                 <div class="w-7 h-7 rounded-full bg-agro-700 text-white flex items-center justify-center text-xs flex-shrink-0">
                     <i class="fa-solid fa-robot"></i>
                 </div>
-                <div class="bg-slate-100 rounded-2xl rounded-tl-none px-4 py-2.5 text-xs text-slate-800 max-w-[85%] leading-relaxed">
+                <div class="bg-slate-100 rounded-2xl rounded-tl-none px-4 py-2 text-xs text-slate-800 max-w-[85%] leading-relaxed">
                     ${data.answer || "No response received."}
                 </div>
             </div>

@@ -112,31 +112,95 @@
             <div class="flex items-center gap-1.5 flex-wrap">
                 <span class="text-xs font-bold text-slate-400 uppercase tracking-wider mr-1">Presets:</span>
                 <button onclick="applyPreset('Mangaluru', 'Rice', 'Clay soil', 'Vegetative / Growing stage')" class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-white border border-slate-200 hover:border-agro-500 hover:text-agro-700 transition shadow-2xs">🍚 Mangaluru</button>
+                <button onclick="applyPreset('Malappuram', 'Rice', 'Loamy soil', 'Vegetative / Growing stage')" class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-white border border-slate-200 hover:border-agro-500 hover:text-agro-700 transition shadow-2xs">🌴 Malappuram</button>
                 <button onclick="applyPreset('Ludhiana', 'Wheat', 'Loamy soil', 'Flowering / Panicle stage')" class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-white border border-slate-200 hover:border-agro-500 hover:text-agro-700 transition shadow-2xs">🌾 Punjab</button>
                 <button onclick="applyPreset('Nagpur', 'Cotton', 'Black soil', 'Vegetative / Growing stage')" class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-white border border-slate-200 hover:border-agro-500 hover:text-agro-700 transition shadow-2xs">☁️ Nagpur</button>
-                <button onclick="applyPreset('Bengaluru', 'Tomato', 'Red soil', 'Flowering / Panicle stage')" class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-white border border-slate-200 hover:border-agro-500 hover:text-agro-700 transition shadow-2xs">🍅 Bengaluru</button>
             </div>
         </div>
 
-        <!-- 🔍 PROMINENT SEARCH BAR -->
-        <div class="mb-6">
-            <div class="relative w-full max-w-3xl">
-                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-agro-600 text-base">
-                    <i class="fa-solid fa-magnifying-glass"></i>
+        <!-- 🔍 SEARCH & LOCATION CONTROLS BAR -->
+        <div class="glass-card rounded-2xl p-4 shadow-sm mb-6 space-y-3">
+            <div class="flex flex-col md:flex-row gap-3">
+                <!-- 1. Universal Search Input -->
+                <div class="relative flex-1">
+                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-agro-600 text-sm">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </div>
+                    <input 
+                        type="text" 
+                        id="universal-search-input" 
+                        placeholder="Search location, district, or crop (e.g. Mangaluru, Malappuram, Potato, Wheat)..." 
+                        class="w-full pl-10 pr-24 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:border-agro-600 focus:bg-white focus:ring-2 focus:ring-agro-100 transition"
+                    >
+                    <button 
+                        onclick="handleUniversalSearch()" 
+                        id="search-action-btn"
+                        class="absolute inset-y-1 right-1 px-3.5 bg-agro-700 hover:bg-agro-800 text-white rounded-lg text-xs font-bold transition flex items-center space-x-1"
+                    >
+                        <i class="fa-solid fa-bolt text-amber-300 text-xs"></i>
+                        <span>Search</span>
+                    </button>
                 </div>
-                <input 
-                    type="text" 
-                    id="universal-search-input" 
-                    placeholder="Search location, district, or crop (e.g. Mangaluru, Rice, Potato, Tomato)..." 
-                    class="w-full pl-11 pr-28 py-3.5 bg-white border-2 border-agro-200 rounded-2xl text-sm font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:border-agro-600 focus:ring-4 focus:ring-agro-100 shadow-sm transition"
-                >
-                <button 
-                    onclick="handleUniversalSearch()" 
-                    id="search-action-btn"
-                    class="absolute inset-y-1.5 right-1.5 px-4 bg-agro-700 hover:bg-agro-800 text-white rounded-xl text-xs font-bold shadow-sm transition flex items-center space-x-1.5"
-                >
-                    <i class="fa-solid fa-bolt text-amber-300"></i>
-                    <span>Analyze</span>
+
+                <!-- 2. Interactive Location Selector & GPS Auto-Detect -->
+                <div class="flex items-center space-x-2">
+                    <div class="relative min-w-[200px]">
+                        <select id="quick-location-select" onchange="handleLocationSelect(this.value)" class="w-full pl-8 pr-8 py-2.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 focus:outline-none focus:border-agro-600 appearance-none">
+                            <option value="">📍 Select Farming Region...</option>
+                            <optgroup label="Kerala / Coastal">
+                                <option value="Malappuram">Malappuram, Kerala</option>
+                                <option value="Mangaluru" selected>Mangaluru, Karnataka</option>
+                                <option value="Wayanad">Wayanad, Kerala</option>
+                                <option value="Palakkad">Palakkad, Kerala</option>
+                            </optgroup>
+                            <optgroup label="South India">
+                                <option value="Bengaluru">Bengaluru, Karnataka</option>
+                                <option value="Coimbatore">Coimbatore, Tamil Nadu</option>
+                                <option value="Hyderabad">Hyderabad, Telangana</option>
+                                <option value="Guntur">Guntur, Andhra Pradesh</option>
+                            </optgroup>
+                            <optgroup label="North & West India">
+                                <option value="Ludhiana">Ludhiana, Punjab</option>
+                                <option value="Nagpur">Nagpur, Maharashtra</option>
+                                <option value="Nashik">Nashik, Maharashtra</option>
+                                <option value="Lucknow">Lucknow, Uttar Pradesh</option>
+                                <option value="Patna">Patna, Bihar</option>
+                            </optgroup>
+                        </select>
+                        <i class="fa-solid fa-map-location-dot absolute left-2.5 top-3 text-agro-600 text-xs pointer-events-none"></i>
+                        <i class="fa-solid fa-chevron-down absolute right-3 top-3.5 text-slate-400 text-[10px] pointer-events-none"></i>
+                    </div>
+
+                    <!-- GPS Auto-Detect Button -->
+                    <button onclick="detectGPSLocation()" id="gps-btn" title="Auto-detect current GPS location" class="px-3 py-2.5 bg-slate-100 hover:bg-agro-50 hover:text-agro-700 text-slate-700 rounded-xl text-xs font-bold border border-slate-200 transition flex items-center space-x-1.5 flex-shrink-0">
+                        <i class="fa-solid fa-crosshairs text-agro-600"></i>
+                        <span class="hidden sm:inline">GPS Auto</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 3. Category & Filter Pills Bar (Filter by Category and Water) -->
+            <div class="flex items-center space-x-2 overflow-x-auto custom-scrollbar pb-1 pt-1 text-xs">
+                <span class="font-bold text-slate-400 uppercase tracking-wider text-[11px] flex-shrink-0 mr-1">
+                    <i class="fa-solid fa-filter text-agro-600 mr-1"></i>Filter:
+                </span>
+                <button onclick="filterCommodities('all')" data-filter="all" class="filter-pill px-3 py-1 rounded-full font-bold bg-agro-700 text-white flex-shrink-0 transition">
+                    All Items
+                </button>
+                <button onclick="filterCommodities('grains')" data-filter="grains" class="filter-pill px-3 py-1 rounded-full font-medium bg-white text-slate-600 border border-slate-200 hover:border-agro-400 hover:text-agro-700 flex-shrink-0 transition">
+                    🌾 Grains & Cereals
+                </button>
+                <button onclick="filterCommodities('vegetables')" data-filter="vegetables" class="filter-pill px-3 py-1 rounded-full font-medium bg-white text-slate-600 border border-slate-200 hover:border-agro-400 hover:text-agro-700 flex-shrink-0 transition">
+                    🥕 Vegetables & Tubers
+                </button>
+                <button onclick="filterCommodities('cash')" data-filter="cash" class="filter-pill px-3 py-1 rounded-full font-medium bg-white text-slate-600 border border-slate-200 hover:border-agro-400 hover:text-agro-700 flex-shrink-0 transition">
+                    ☁️ Cash Crops
+                </button>
+                <button onclick="filterCommodities('low_water')" data-filter="low_water" class="filter-pill px-3 py-1 rounded-full font-medium bg-white text-slate-600 border border-slate-200 hover:border-agro-400 hover:text-agro-700 flex-shrink-0 transition">
+                    💧 Low Water
+                </button>
+                <button onclick="filterCommodities('high_water')" data-filter="high_water" class="filter-pill px-3 py-1 rounded-full font-medium bg-white text-slate-600 border border-slate-200 hover:border-agro-400 hover:text-agro-700 flex-shrink-0 transition">
+                    🌧️ High Water
                 </button>
             </div>
         </div>
@@ -198,11 +262,12 @@
                     </div>
                 </div>
 
-                <!-- 2. Commodities & Food Selector with "+ Add Food Item" Option -->
+                <!-- 2. Commodities & Food Selector with Filters & "+ Add Food Item" -->
                 <div class="glass-card rounded-2xl p-5 shadow-sm">
                     <div class="flex items-center justify-between mb-3">
                         <div class="flex items-center space-x-2">
                             <h2 class="text-sm font-bold text-slate-800 uppercase tracking-wide">Commodities & Food</h2>
+                            <span id="crop-count-badge" class="text-[10px] font-bold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">6 items</span>
                         </div>
                         <!-- ➕ ADD FOOD ITEM BUTTON -->
                         <button onclick="openAddCropModal()" class="flex items-center space-x-1 px-3 py-1 bg-agro-700 hover:bg-agro-800 text-white rounded-lg text-xs font-bold shadow-xs transition">
@@ -212,7 +277,7 @@
                     </div>
 
                     <!-- Dynamic Commodities Grid -->
-                    <div class="grid grid-cols-4 sm:grid-cols-6 gap-2" id="commodity-grid">
+                    <div class="grid grid-cols-3 sm:grid-cols-4 gap-2" id="commodity-grid">
                         <!-- Populated dynamically via JS -->
                     </div>
                 </div>
