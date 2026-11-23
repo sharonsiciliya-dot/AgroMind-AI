@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgroMind AI — Smart Farming Assistant</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        agro: {
+                            50: '#f2f8f3',
+                            100: '#e1efe3',
+                            200: '#c5e0cb',
+                            300: '#9acab3',
+                            400: '#69ad7f',
+                            500: '#46915e',
+                            600: '#34754a',
+                            700: '#2a5d3c',
+                            800: '#234931',
+                            900: '#1e3d2a',
+                            dark: '#142a1d'
+                        },
+                        earth: {
+                            100: '#f7f4ee',
+                            200: '#ebe4d5',
+                            500: '#9b7e51',
+                            800: '#4a3b25'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #f7f9f6;
+            color: #1e293b;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+        .hero-weather-bg {
+            background: linear-gradient(135deg, #234931 0%, #34754a 50%, #46915e 100%);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 9999px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans">
+
+    <!-- Top Navigation Bar -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-agro-700 flex items-center justify-center text-white shadow-md shadow-agro-700/20">
+                    <i class="fa-solid fa-seedling text-lg"></i>
+                </div>
+                <div>
+                    <span class="text-xl font-extrabold text-agro-900 tracking-tight">AgroMind <span class="text-agro-500">AI</span></span>
+                    <span class="hidden sm:inline-block ml-2 px-2 py-0.5 text-xs font-semibold bg-agro-100 text-agro-700 rounded-full">Multi-Agent</span>
+                </div>
+            </div>
+
+            <!-- Status Badges & Quick Scenarios -->
+            <div class="flex items-center space-x-3">
+                <div id="backend-status" class="hidden sm:flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 mr-2 animate-pulse"></span>
+                    API Online
+                </div>
+                <div id="gemini-status" class="hidden sm:flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-sky-50 text-sky-700 border border-sky-200">
+                    <i class="fa-solid fa-sparkles mr-1.5 text-sky-500"></i>
+                    Gemini AI Active
+                </div>
+                <button onclick="downloadReport()" class="flex items-center space-x-1.5 px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold transition">
+                    <i class="fa-solid fa-file-arrow-down"></i>
+                    <span>Export</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        
+        <!-- Welcome & Quick Presets -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 pb-4 border-b border-slate-200/80 gap-4">
+            <div>
+                <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 flex items-center gap-2">
+                    Hello, Farmers <span class="text-2xl">👋</span>
+                </h1>
+                <p class="text-sm text-slate-500 mt-1 flex items-center gap-2">
+                    <span id="current-date-text">Sunday, 23 Nov 2026</span>
+                    <span>•</span>
+                    <span class="text-agro-700 font-medium"><i class="fa-solid fa-location-dot mr-1"></i>Precision Microclimate Advisory</span>
+                </p>
+            </div>
+
+            <!-- Demo Scenarios Buttons -->
+            <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Quick Demos:</span>
+                <button onclick="applyPreset('Mangaluru', 'Rice', 'Clay soil', 'Vegetative / Growing stage')" class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-white border border-slate-200 hover:border-agro-500 hover:text-agro-700 transition">🍚 Mangaluru Rice</button>
+                <button onclick="applyPreset('Ludhiana', 'Wheat', 'Loamy soil', 'Flowering / Panicle stage')" class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-white border border-slate-200 hover:border-agro-500 hover:text-agro-700 transition">🌾 Punjab Wheat</button>
+                <button onclick="applyPreset('Nagpur', 'Cotton', 'Black soil', 'Vegetative / Growing stage')" class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-white border border-slate-200 hover:border-agro-500 hover:text-agro-700 transition">☁️ Nagpur Cotton</button>
+                <button onclick="applyPreset('Bengaluru', 'Tomato', 'Red soil', 'Flowering / Panicle stage')" class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-white border border-slate-200 hover:border-agro-500 hover:text-agro-700 transition">🍅 Bangalore Tomato</button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+            <!-- LEFT COLUMN: FARM INPUTS, LIVE WEATHER & COMMODITIES (5 cols) -->
+            <div class="lg:col-span-5 space-y-6">
+
+                <!-- 1. Hero Weather Card (Inspired by Dribbble design) -->
+                <div class="hero-weather-bg rounded-3xl p-6 text-white shadow-xl shadow-agro-900/10 relative overflow-hidden">
+                    <div class="absolute -right-8 -top-8 w-40 h-40 bg-white/5 rounded-full blur-2xl pointer-events-none"></div>
+
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center space-x-2 bg-black/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-medium text-agro-100">
+                            <i class="fa-solid fa-location-crosshairs text-agro-300"></i>
+                            <span id="weather-location-name">Mangaluru, India</span>
+                        </div>
+                        <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-white/20 text-white" id="weather-risk-badge">Low Risk</span>
+                    </div>
+
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <div class="text-5xl font-black tracking-tight" id="weather-temp">+29.5°C</div>
+                            <div class="text-agro-200 text-sm mt-1" id="weather-condition-text">Partly Cloudy • Calm Wind</div>
+                        </div>
+                        <div class="text-5xl text-amber-300 drop-shadow-md">
+                            <i class="fa-solid fa-cloud-sun"></i>
+                        </div>
+                    </div>
+
+                    <!-- Telemetry Grid -->
+                    <div class="grid grid-cols-4 gap-2 bg-black/20 backdrop-blur-md p-3.5 rounded-2xl border border-white/10 text-center">
+                        <div>
+                            <div class="text-[11px] text-agro-200">Soil Temp</div>
+                            <div class="font-bold text-sm mt-0.5" id="weather-soil-temp">+26.8°C</div>
+                        </div>
+                        <div>
+                            <div class="text-[11px] text-agro-200">Humidity</div>
+                            <div class="font-bold text-sm mt-0.5" id="weather-humidity">78%</div>
+                        </div>
+                        <div>
+                            <div class="text-[11px] text-agro-200">Wind</div>
+                            <div class="font-bold text-sm mt-0.5" id="weather-wind">14 km/h</div>
+                        </div>
+                        <div>
+                            <div class="text-[11px] text-agro-200">3D Rain</div>
+                            <div class="font-bold text-sm mt-0.5 text-amber-300" id="weather-rain">4.5 mm</div>
+                        </div>
+                    </div>
+
+                    <!-- Daylight Sunrise / Sunset Arc -->
+                    <div class="mt-4 pt-3 border-t border-white/10 flex items-center justify-between text-xs text-agro-200">
+                        <span><i class="fa-solid fa-sunrise mr-1 text-amber-300"></i> 5:25 AM</span>
+                        <div class="flex-1 mx-4 h-1 bg-white/20 rounded-full relative overflow-hidden">
+                            <div class="h-full bg-amber-300 rounded-full w-2/3"></div>
+                        </div>
+                        <span><i class="fa-solid fa-sunset mr-1 text-orange-400"></i> 6:04 PM</span>
+                    </div>
+                </div>
+
+                <!-- 2. Commodities & Food Selector (Dribbble horizontal row) -->
+                <div class="glass-card rounded-2xl p-5 shadow-sm">
+                    <div class="flex items-center justify-between mb-3">
+                        <h2 class="text-sm font-bold text-slate-800 uppercase tracking-wide">Commodities & Food</h2>
+                        <span class="text-xs text-agro-600 font-semibold cursor-pointer">View All</span>
+                    </div>
+
+                    <div class="grid grid-cols-5 gap-2" id="commodity-grid">
+                        <button onclick="selectCrop('Rice')" data-crop="Rice" class="commodity-btn flex flex-col items-center p-2.5 rounded-xl border-2 border-agro-500 bg-agro-50 transition">
+                            <span class="text-2xl mb-1">🍚</span>
+                            <span class="text-xs font-bold text-agro-900">Rice</span>
+                        </button>
+                        <button onclick="selectCrop('Corn / Maize')" data-crop="Corn / Maize" class="commodity-btn flex flex-col items-center p-2.5 rounded-xl border border-slate-200 bg-white hover:border-agro-300 transition">
+                            <span class="text-2xl mb-1">🌽</span>
+                            <span class="text-xs font-bold text-slate-700">Corn</span>
+                        </button>
+                        <button onclick="selectCrop('Wheat')" data-crop="Wheat" class="commodity-btn flex flex-col items-center p-2.5 rounded-xl border border-slate-200 bg-white hover:border-agro-300 transition">
+                            <span class="text-2xl mb-1">🌾</span>
+                            <span class="text-xs font-bold text-slate-700">Wheat</span>
+                        </button>
+                        <button onclick="selectCrop('Cotton')" data-crop="Cotton" class="commodity-btn flex flex-col items-center p-2.5 rounded-xl border border-slate-200 bg-white hover:border-agro-300 transition">
+                            <span class="text-2xl mb-1">☁️</span>
+                            <span class="text-xs font-bold text-slate-700">Cotton</span>
+                        </button>
+                        <button onclick="selectCrop('Tomato')" data-crop="Tomato" class="commodity-btn flex flex-col items-center p-2.5 rounded-xl border border-slate-200 bg-white hover:border-agro-300 transition">
+                            <span class="text-2xl mb-1">🍅</span>
+                            <span class="text-xs font-bold text-slate-700">Tomato</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 3. Farm Setup Form -->
+                <div class="glass-card rounded-2xl p-5 shadow-sm space-y-4">
+                    <h2 class="text-sm font-bold text-slate-800 uppercase tracking-wide flex items-center gap-2">
+                        <i class="fa-solid fa-sliders text-agro-600"></i> Field Parameters
+                    </h2>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">Location / District</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-xs"></i>
+                            <input type="text" id="input-location" value="Mangaluru" class="w-full pl-8 pr-3 py-2 text-sm rounded-xl border border-slate-200 focus:outline-none focus:border-agro-600 focus:ring-1 focus:ring-agro-600">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">Soil Classification</label>
+                            <select id="input-soil" class="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 focus:outline-none focus:border-agro-600 bg-white">
+                                <option value="Clay soil" selected>Clay soil</option>
+                                <option value="Loamy soil">Loamy soil</option>
+                                <option value="Sandy soil">Sandy soil</option>
+                                <option value="Black soil">Black soil</option>
+                                <option value="Red soil">Red soil</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">Growth Stage</label>
+                            <select id="input-stage" class="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 focus:outline-none focus:border-agro-600 bg-white">
+                                <option value="Seedling / Germination">Seedling</option>
+                                <option value="Vegetative / Growing stage" selected>Vegetative</option>
+                                <option value="Flowering / Panicle stage">Flowering</option>
+                                <option value="Harvesting / Maturity">Harvesting</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">Field Size (Acres)</label>
+                        <input type="number" id="input-acres" value="2.5" step="0.5" min="0.5" max="1000" class="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 focus:outline-none focus:border-agro-600 bg-white">
+                    </div>
+
+                    <button onclick="runAdvisory()" id="run-btn" class="w-full py-3 bg-agro-700 hover:bg-agro-800 text-white font-bold rounded-xl shadow-md shadow-agro-700/20 transition flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-brain"></i>
+                        <span>Run Multi-Agent Advisory</span>
+                    </button>
+                </div>
+
+                <!-- 4. "My Fields" Card (Matching right mockup) -->
+                <div class="glass-card rounded-2xl p-5 shadow-sm border border-agro-100">
+                    <div class="flex items-center justify-between mb-3">
+                        <h2 class="text-sm font-bold text-slate-800 uppercase tracking-wide">My Fields Overview</h2>
+                        <span class="text-xs bg-agro-100 text-agro-800 font-bold px-2 py-0.5 rounded-full">Active Sensor</span>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <div class="w-16 h-16 rounded-xl bg-cover bg-center shadow-inner flex-shrink-0" style="background-image: url('https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=200&q=80');"></div>
+                        <div class="flex-1 min-w-0">
+                            <h3 class="text-sm font-bold text-slate-900 truncate" id="field-card-title">North Paddy Block #1</h3>
+                            <p class="text-xs text-slate-500 mt-0.5">Est. Yield: <strong class="text-agro-700 font-bold">7,200 kg/ha</strong></p>
+                            <p class="text-[11px] text-slate-400 mt-1">Optimal vegetative growth • Moisture 68%</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- RIGHT COLUMN: MULTI-AGENT ADVISORY & GEMINI WORKFLOW (7 cols) -->
+            <div class="lg:col-span-7 space-y-6">
+
+                <!-- 1. The Four Agents Ribbon -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                    <div class="p-3 bg-white rounded-xl border border-slate-200 shadow-sm flex items-center space-x-2.5">
+                        <div class="w-8 h-8 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center font-bold text-sm flex-shrink-0">
+                            <i class="fa-solid fa-cloud-bolt"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <div class="text-[10px] font-bold text-slate-400 uppercase">Agent 1</div>
+                            <div class="text-xs font-bold text-slate-800 truncate">Weather Intel</div>
+                        </div>
+                    </div>
+                    <div class="p-3 bg-white rounded-xl border border-slate-200 shadow-sm flex items-center space-x-2.5">
+                        <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-sm flex-shrink-0">
+                            <i class="fa-solid fa-wheat-awn"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <div class="text-[10px] font-bold text-slate-400 uppercase">Agent 2</div>
+                            <div class="text-xs font-bold text-slate-800 truncate">Crop Agronomy</div>
+                        </div>
+                    </div>
+                    <div class="p-3 bg-white rounded-xl border border-slate-200 shadow-sm flex items-center space-x-2.5">
+                        <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-sm flex-shrink-0">
+                            <i class="fa-solid fa-lightbulb"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <div class="text-[10px] font-bold text-slate-400 uppercase">Agent 3</div>
+                            <div class="text-xs font-bold text-slate-800 truncate">Recommendation</div>
+                        </div>
+                    </div>
+                    <div class="p-3 bg-white rounded-xl border border-slate-200 shadow-sm flex items-center space-x-2.5">
+                        <div class="w-8 h-8 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center font-bold text-sm flex-shrink-0">
+                            <i class="fa-solid fa-scale-balanced"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <div class="text-[10px] font-bold text-slate-400 uppercase">Agent 4</div>
+                            <div class="text-xs font-bold text-slate-800 truncate">Coordinator</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Conflict Arbitration Banner (If conflicts exist) -->
+                <div id="conflict-panel" class="hidden">
+                    <div class="bg-amber-50 border-l-4 border-amber-500 rounded-xl p-4 shadow-sm">
+                        <div class="flex items-start">
+                            <i class="fa-solid fa-triangle-exclamation text-amber-600 mt-0.5 text-base mr-3"></i>
+                            <div class="flex-1">
+                                <h3 class="text-sm font-bold text-amber-900">Arbitrated Conflict Detected</h3>
+                                <p class="text-xs text-amber-800 mt-1" id="conflict-desc">Crop Agent requested fertilizer application, but Weather Agent flagged rain. Coordinator rescheduled application.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Tabbed Advisory Center -->
+                <div class="glass-card rounded-2xl shadow-sm overflow-hidden">
+                    <!-- Tab Headers -->
+                    <div class="flex border-b border-slate-200 bg-slate-50/70 text-xs font-bold text-slate-600 px-4 pt-2 space-x-4">
+                        <button onclick="switchTab('advisory')" id="tab-btn-advisory" class="py-2.5 border-b-2 border-agro-700 text-agro-900 font-extrabold flex items-center gap-1.5">
+                            <i class="fa-solid fa-clipboard-check"></i> Action Advisory
+                        </button>
+                        <button onclick="switchTab('chat')" id="tab-btn-chat" class="py-2.5 border-b-2 border-transparent hover:text-agro-700 flex items-center gap-1.5">
+                            <i class="fa-solid fa-comments"></i> Ask Gemini Agent
+                        </button>
+                        <button onclick="switchTab('timeline')" id="tab-btn-timeline" class="py-2.5 border-b-2 border-transparent hover:text-agro-700 flex items-center gap-1.5">
+                            <i class="fa-solid fa-network-wired"></i> Agent Message Bus
+                        </button>
+                    </div>
+
+                    <!-- Tab 1: Action Advisory -->
+                    <div id="tab-content-advisory" class="p-6 space-y-6">
+                        
+                        <!-- Executive Summary -->
+                        <div class="bg-agro-50/60 border border-agro-100 rounded-xl p-4">
+                            <div class="flex items-center space-x-2 text-agro-800 font-bold text-xs uppercase mb-2">
+                                <i class="fa-solid fa-sparkles text-amber-500"></i>
+                                <span>Executive Advisory Summary</span>
+                            </div>
+                            <div id="executive-summary-text" class="text-sm text-slate-700 leading-relaxed space-y-2">
+                                Loading multi-agent synthesis...
+                            </div>
+                        </div>
+
+                        <!-- 4 Directives Cards -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            
+                            <!-- Irrigation Card -->
+                            <div class="border border-slate-200 rounded-xl p-4 bg-white shadow-sm hover:border-agro-400 transition">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center space-x-2">
+                                        <div class="w-7 h-7 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center text-xs">
+                                            <i class="fa-solid fa-droplet"></i>
+                                        </div>
+                                        <h4 class="text-sm font-bold text-slate-800">Irrigation Protocol</h4>
+                                    </div>
+                                    <span id="irrigation-urgency" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">NORMAL</span>
+                                </div>
+                                <p id="irrigation-text" class="text-xs text-slate-600 leading-relaxed">
+                                    Standard scheduled irrigation with normal volume.
+                                </p>
+                            </div>
+
+                            <!-- Nutrition Card -->
+                            <div class="border border-slate-200 rounded-xl p-4 bg-white shadow-sm hover:border-agro-400 transition">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center space-x-2">
+                                        <div class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs">
+                                            <i class="fa-solid fa-leaf"></i>
+                                        </div>
+                                        <h4 class="text-sm font-bold text-slate-800">Soil Nutrition</h4>
+                                    </div>
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700">TARGET</span>
+                                </div>
+                                <p id="fertilizer-text" class="text-xs text-slate-600 leading-relaxed">
+                                    Split application of Urea (Nitrogen) & Zinc sulfate.
+                                </p>
+                            </div>
+
+                            <!-- Pest Card -->
+                            <div class="border border-slate-200 rounded-xl p-4 bg-white shadow-sm hover:border-agro-400 transition">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center space-x-2">
+                                        <div class="w-7 h-7 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center text-xs">
+                                            <i class="fa-solid fa-shield-virus"></i>
+                                        </div>
+                                        <h4 class="text-sm font-bold text-slate-800">Pest & Pathogen Watch</h4>
+                                    </div>
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700">IPM</span>
+                                </div>
+                                <div id="pest-list" class="text-xs text-slate-600 space-y-1.5">
+                                    <div>• Sheath Blight: Monitor humidity.</div>
+                                    <div>• Yellow Stem Borer: Use pheromone traps.</div>
+                                </div>
+                            </div>
+
+                            <!-- Field Operations Feasibility -->
+                            <div class="border border-slate-200 rounded-xl p-4 bg-white shadow-sm hover:border-agro-400 transition">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center space-x-2">
+                                        <div class="w-7 h-7 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center text-xs">
+                                            <i class="fa-solid fa-tractor"></i>
+                                        </div>
+                                        <h4 class="text-sm font-bold text-slate-800">Field Activity Feasibility</h4>
+                                    </div>
+                                </div>
+                                <div id="ops-list" class="text-xs text-slate-600 space-y-1">
+                                    <div>✅ <strong>Spraying:</strong> Permitted</div>
+                                    <div>✅ <strong>Weeding:</strong> Favorable soil workability</div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Tab 2: Ask Gemini AI Agent -->
+                    <div id="tab-content-chat" class="p-6 hidden space-y-4">
+                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs text-slate-600">
+                            💡 Ask questions about pest control, spraying feasibility, or fertilizer timing. Answers are synthesized by <strong>Google Gemini AI</strong> using live field data.
+                        </div>
+
+                        <!-- Chat Messages Container -->
+                        <div id="chat-messages" class="space-y-3 max-h-80 overflow-y-auto custom-scrollbar p-1">
+                            <div class="flex items-start space-x-2.5">
+                                <div class="w-7 h-7 rounded-full bg-agro-700 text-white flex items-center justify-center text-xs flex-shrink-0">
+                                    <i class="fa-solid fa-robot"></i>
+                                </div>
+                                <div class="bg-slate-100 rounded-2xl rounded-tl-none px-4 py-2.5 text-xs text-slate-800 max-w-[85%] leading-relaxed">
+                                    Hello! I am your AgroMind farming copilot. Ask me anything about your current crop or weather conditions!
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Chat Input Box -->
+                        <div class="flex items-center space-x-2 pt-2">
+                            <input type="text" id="chat-input" placeholder="e.g. Can I spray pesticide this evening?" class="flex-1 px-4 py-2.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-agro-600">
+                            <button onclick="sendChatMessage()" class="px-4 py-2.5 bg-agro-700 hover:bg-agro-800 text-white rounded-xl text-xs font-bold transition flex items-center space-x-1">
+                                <span>Ask</span>
+                                <i class="fa-solid fa-paper-plane text-[10px]"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tab 3: Multi-Agent Message Bus -->
+                    <div id="tab-content-timeline" class="p-6 hidden space-y-3 max-h-96 overflow-y-auto custom-scrollbar">
+                        <div class="text-xs text-slate-500 mb-2">Chronological audit trail of autonomous message payloads exchanged across agents:</div>
+                        <div id="timeline-container" class="space-y-3">
+                            <!-- Populated dynamically via JS -->
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 mt-12 py-6 text-center text-xs text-slate-500">
+        <p>AgroMind AI — Autonomous Smart Farming System &bull; Open-Meteo &bull; Google Gemini AI</p>
+    </footer>
+
+    <!-- App Logic -->
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

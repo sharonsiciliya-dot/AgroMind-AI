@@ -15,9 +15,9 @@ Modern farmers face unpredictable weather volatility, complex soil nutrient requ
 
 ```
                         ┌───────────────────────────────────────────────┐
-                        │        Farmer Input / Streamlit UI            │
+                        │      Modern Web App (http://localhost:8000)   │
                         └───────────────────────┬───────────────────────┘
-                                                │
+                                                │ REST API
                                                 ▼
                         ┌───────────────────────────────────────────────┐
                         │      Agent 4: Coordinator & Report Agent       │
@@ -44,10 +44,10 @@ Modern farmers face unpredictable weather volatility, complex soil nutrient requ
                                             │
                                             ▼
                         ┌───────────────────────────────────────────────┐
-                        │       Agent 4: Conflict Arbitration Engine    │
+                        │  Agent 4: Conflict Arbitration & Gemini AI    │
                         │ - Detects conflicting agent recommendations   │
                         │ - Resolves timing & agrochemical safety       │
-                        │ - Generates Executive Farmer Report           │
+                        │ - Google Gemini AI Executive Synthesis        │
                         └───────────────────────────────────────────────┘
 ```
 
@@ -60,20 +60,18 @@ Modern farmers face unpredictable weather volatility, complex soil nutrient requ
    - Diagnoses stage-dependent physiological needs and pest vulnerabilities.
 3. **💡 Farm Recommendation Agent (`agents/recommendation_agent.py`)**
    - Formulates tailored irrigation timing, stage fertilization doses, pest scouting routines, and daily task permissions.
-4. **⚖️ Coordinator and Report Agent (`agents/coordinator.py`)**
-   - Orchestrates chronological message passing across all agents.
+4. **⚖️ Coordinator & Conflict Arbitrator (`agents/coordinator.py`)**
+   - Chronological message passing across all agents.
    - **Conflict Detection & Arbitration**: Identifies competing directives (e.g., Urea application scheduled on rain days, or spraying in high winds) and automatically overrides or reschedules them to protect crop health and prevent input waste.
-   - Generates natural language executive summaries with optional Gemini API integration.
+   - Synthesizes the final advisory using **Google Gemini AI** (with an agronomic rule-based fallback).
 
 ---
 
 ## 🛠️ Tech Stack
-- **Language:** Python 3.12+
-- **Frontend / Dashboard:** Streamlit
-- **Agent Orchestration:** Custom Event-Driven Multi-Agent Framework
-- **Weather Services:** Open-Meteo Live API & Geocoding Service
-- **AI Synthesis:** Google GenAI / Gemini API (with robust offline agronomic heuristic fallback)
-- **Data Analytics:** Pandas
+- **Backend & API:** FastAPI, Uvicorn, Pydantic
+- **AI Engine:** Google Gemini AI (`google-genai` / `gemini-2.5-flash`)
+- **Weather Telemetry:** Open-Meteo Live API & Geocoding
+- **Frontend / UI:** Modern Responsive Web Application (Tailwind CSS, FontAwesome 6, Vanilla JS) served directly by FastAPI (No Streamlit needed!)
 
 ---
 
@@ -91,28 +89,31 @@ pip install -r requirements.txt
 ```
 
 ### 3. (Optional) Configure Gemini API
-Set your Gemini API key as an environment variable or enter it directly in the app sidebar:
-```bash
-# Windows PowerShell
-$env:GEMINI_API_KEY="your-api-key-here"
-
-# Linux / macOS
-export GEMINI_API_KEY="your-api-key-here"
+Copy `.env.example` to `.env` and set your Google Gemini API key:
+```env
+GEMINI_API_KEY=your_gemini_api_key_here
 ```
 *(Note: AgroMind AI features an intelligent fallback engine that works completely offline if no API key is provided!)*
 
 ### 4. Launch the Application
 ```bash
-streamlit run app.py
+python run_backend.py
 ```
-Open your browser at `http://localhost:8501`.
+Open your browser at **`http://localhost:8000`** to view the live dashboard.
+Interactive Swagger API documentation is available at **`http://localhost:8000/docs`**.
 
 ---
 
 ## 📊 Project Structure
 ```
 AgroMind-AI/
-├── app.py                      # Interactive Streamlit dashboard
+├── frontend/                   # Modern responsive Web UI (Tailwind CSS & JS)
+│   ├── index.html              # Main dashboard matching Dribbble design
+│   └── js/
+│       └── app.js              # Client-side API integration & event rendering
+├── backend/
+│   ├── __init__.py
+│   └── main.py                 # FastAPI backend, REST endpoints & static file mounting
 ├── agents/
 │   ├── __init__.py
 │   ├── weather_agent.py        # Agent 1: Atmospheric & hazard analysis
@@ -121,15 +122,18 @@ AgroMind-AI/
 │   └── coordinator.py          # Agent 4: Orchestrator & conflict arbitration
 ├── services/
 │   ├── __init__.py
-│   └── weather_api.py          # Open-Meteo live API integration & geocoding
-├── requirements.txt            # Project dependencies
-├── README.md                   # Documentation & architecture breakdown
+│   ├── weather_api.py          # Open-Meteo live API integration & geocoding
+│   └── gemini_service.py       # Google Gemini AI backend service
+├── run_backend.py              # Single launcher for Backend + Frontend
+├── requirements.txt            # Lightweight dependencies
+├── README.md                   # Hackathon documentation & architecture
 └── .gitignore                  # Git exclusions
 ```
 
 ---
 
 ## 🌾 Hackathon Highlights
+- **No Streamlit Overhead:** Lightweight, blazing-fast single server serving both the REST API and the modern UI.
 - **Real-Time Data Integration:** Zero mock dependencies—fetches actual satellite/station weather for any global location.
 - **Genuine Agent Communication:** Complete audit trail of inter-agent messages and timestamps displayed live on the dashboard.
 - **Automated Conflict Resolution:** Bridges the gap between rigid crop schedules and dynamic environmental conditions.

@@ -2,6 +2,8 @@ import os
 from typing import Optional, List, Dict, Any
 from fastapi import FastAPI, Query, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 from dotenv import load_dotenv
 
@@ -15,11 +17,11 @@ load_dotenv()
 
 app = FastAPI(
     title="AgroMind AI - Multi-Agent Smart Farming Backend API",
-    description="RESTful API coordinating autonomous agricultural AI agents with live Open-Meteo telemetry, conflict arbitration, and Google Gemini AI.",
+    description="RESTful API & Web Application coordinating autonomous agricultural AI agents with live Open-Meteo telemetry, conflict arbitration, and Google Gemini AI.",
     version="1.0.0"
 )
 
-# Enable CORS for Streamlit frontend and external clients
+# Enable CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -27,6 +29,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Path to frontend assets
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+FRONTEND_DIR = os.path.join(BASE_DIR, "frontend")
 
 # Request Models
 class AdvisoryRequest(BaseModel):
@@ -47,24 +53,20 @@ weather_agent = WeatherAgent()
 crop_agent = CropAgent()
 gemini_service = GeminiService()
 
+# --- SERVE FRONTEND AT ROOT ---
 @app.get("/")
-def root():
+def serve_frontend():
+    """Serves the AgroMind modern Web UI dashboard."""
+    index_path = os.path.join(FRONTEND_DIR, "index.html")
+    if os.path.exists(index_path):
+        return FileResponse(index_path)
     return {
-        "service": "AgroMind AI Backend API",
+        "service": "AgroMind AI",
         "status": "online",
-        "version": "1.0.0",
-        "gemini_configured": gemini_service.is_configured(),
-        "endpoints": {
-            "health": "/health",
-            "advisory": "/api/advisory (POST)",
-            "ask": "/api/ask (POST)",
-            "gemini_status": "/api/gemini/status (GET)",
-            "weather": "/api/weather (GET)",
-            "crops": "/api/crops (GET)",
-            "docs": "/docs"
-        }
+        "docs": "/docs"
     }
 
+# --- API ENDPOINTS ---
 @app.get("/health")
 def health_check():
     return {
@@ -145,3 +147,7 @@ def ask_gemini(req: QuestionRequest):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Question processing failed: {str(e)}")
+
+# Mount static files for JS and assets
+if os.path.exists(FRONTEND_DIR):
+    app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")
