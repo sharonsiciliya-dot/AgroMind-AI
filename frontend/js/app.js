@@ -13,7 +13,15 @@ document.addEventListener("DOMContentLoaded", () => {
     // Initial run
     runAdvisory();
 
-    // Allow Enter key to submit chat
+    // Universal Search Bar Enter key trigger
+    const searchInput = document.getElementById("universal-search-input");
+    if (searchInput) {
+        searchInput.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") handleUniversalSearch();
+        });
+    }
+
+    // Chat Enter key trigger
     const chatInput = document.getElementById("chat-input");
     if (chatInput) {
         chatInput.addEventListener("keypress", (e) => {
@@ -21,6 +29,52 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 });
+
+// Universal Search Handler
+function handleUniversalSearch() {
+    const searchInput = document.getElementById("universal-search-input");
+    if (!searchInput) return;
+    const query = searchInput.value.trim().toLowerCase();
+    if (!query) return;
+
+    const cropsMap = {
+        "rice": "Rice",
+        "paddy": "Rice",
+        "wheat": "Wheat",
+        "corn": "Corn / Maize",
+        "maize": "Corn / Maize",
+        "cotton": "Cotton",
+        "tomato": "Tomato"
+    };
+
+    let matchedCrop = null;
+    for (const [key, val] of Object.entries(cropsMap)) {
+        if (query.includes(key)) {
+            matchedCrop = val;
+            break;
+        }
+    }
+
+    if (matchedCrop) {
+        selectCrop(matchedCrop);
+    }
+
+    // Extract potential location if not purely crop
+    const cleanedLocation = query
+        .replace(/rice|paddy|wheat|corn|maize|cotton|tomato/gi, "")
+        .replace(/in|at|farm|field|district|crop|for/gi, "")
+        .trim();
+
+    if (cleanedLocation.length > 2) {
+        const formattedLoc = cleanedLocation.charAt(0).toUpperCase() + cleanedLocation.slice(1);
+        document.getElementById("input-location").value = formattedLoc;
+    } else if (!matchedCrop && query.length > 2) {
+        const formattedLoc = query.charAt(0).toUpperCase() + query.slice(1);
+        document.getElementById("input-location").value = formattedLoc;
+    }
+
+    runAdvisory();
+}
 
 function selectCrop(cropName) {
     selectedCropName = cropName;
@@ -44,6 +98,8 @@ function applyPreset(loc, crop, soil, stage) {
     document.getElementById("input-location").value = loc;
     document.getElementById("input-soil").value = soil;
     document.getElementById("input-stage").value = stage;
+    const searchInput = document.getElementById("universal-search-input");
+    if (searchInput) searchInput.value = `${loc} • ${crop}`;
     selectCrop(crop);
 }
 
@@ -66,6 +122,7 @@ function switchTab(tabId) {
 
 async function runAdvisory() {
     const runBtn = document.getElementById("run-btn");
+    const searchBtn = document.getElementById("search-action-btn");
     const loc = document.getElementById("input-location").value.trim() || "Mangaluru";
     const soil = document.getElementById("input-soil").value;
     const stage = document.getElementById("input-stage").value;
@@ -74,6 +131,10 @@ async function runAdvisory() {
     if (runBtn) {
         runBtn.disabled = true;
         runBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i><span>Analyzing Telemetry & Coordinating Agents...</span>`;
+    }
+    if (searchBtn) {
+        searchBtn.disabled = true;
+        searchBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
     }
 
     try {
@@ -99,6 +160,10 @@ async function runAdvisory() {
         if (runBtn) {
             runBtn.disabled = false;
             runBtn.innerHTML = `<i class="fa-solid fa-brain"></i><span>Run Multi-Agent Advisory</span>`;
+        }
+        if (searchBtn) {
+            searchBtn.disabled = false;
+            searchBtn.innerHTML = `<i class="fa-solid fa-bolt text-amber-300"></i><span>Analyze</span>`;
         }
     }
 }
@@ -231,7 +296,7 @@ async function sendChatMessage() {
                 <i class="fa-solid fa-robot"></i>
             </div>
             <div class="bg-slate-100 rounded-2xl rounded-tl-none px-4 py-2 text-xs text-slate-500 italic">
-                Gemini AI is reasoning...
+                AgroMind AI is reasoning...
             </div>
         </div>
     `;
@@ -271,7 +336,7 @@ async function sendChatMessage() {
         const loadEl = document.getElementById(loadingId);
         if (loadEl) loadEl.remove();
         chatBox.innerHTML += `
-            <div class="text-xs text-rose-500 px-4">Connection to Gemini agent failed.</div>
+            <div class="text-xs text-rose-500 px-4">Connection to AI assistant failed.</div>
         `;
     }
 }

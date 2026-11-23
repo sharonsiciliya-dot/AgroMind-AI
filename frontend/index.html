@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AgroMind AI — Smart Farming Assistant</title>
+    <title>AgroMind AI — Precision Smart Farming Assistant</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
@@ -27,12 +27,6 @@
                             800: '#234931',
                             900: '#1e3d2a',
                             dark: '#142a1d'
-                        },
-                        earth: {
-                            100: '#f7f4ee',
-                            200: '#ebe4d5',
-                            500: '#9b7e51',
-                            800: '#4a3b25'
                         }
                     },
                     fontFamily: {
@@ -48,12 +42,12 @@
             color: #1e293b;
         }
         .glass-card {
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.96);
             backdrop-filter: blur(12px);
-            border: 1px solid rgba(226, 232, 240, 0.8);
+            border: 1px solid rgba(226, 232, 240, 0.85);
         }
         .hero-weather-bg {
-            background: linear-gradient(135deg, #234931 0%, #34754a 50%, #46915e 100%);
+            background: linear-gradient(135deg, #1e3d2a 0%, #2a5d3c 50%, #46915e 100%);
         }
         .custom-scrollbar::-webkit-scrollbar {
             width: 6px;
@@ -67,7 +61,7 @@
 </head>
 <body class="min-h-screen flex flex-col font-sans">
 
-    <!-- Top Navigation Bar -->
+    <!-- Top Header Bar -->
     <header class="bg-white border-b border-slate-200 sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <div class="flex items-center space-x-3">
@@ -82,17 +76,17 @@
 
             <!-- Status Badges & Quick Scenarios -->
             <div class="flex items-center space-x-3">
-                <div id="backend-status" class="hidden sm:flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                <div id="backend-status" class="flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
                     <span class="w-2 h-2 rounded-full bg-emerald-500 mr-2 animate-pulse"></span>
-                    API Online
+                    System Online
                 </div>
-                <div id="gemini-status" class="hidden sm:flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-sky-50 text-sky-700 border border-sky-200">
-                    <i class="fa-solid fa-sparkles mr-1.5 text-sky-500"></i>
-                    Gemini AI Active
+                <div id="ai-status" class="flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-agro-50 text-agro-800 border border-agro-200">
+                    <i class="fa-solid fa-brain mr-1.5 text-agro-600"></i>
+                    AI Engine Active
                 </div>
                 <button onclick="downloadReport()" class="flex items-center space-x-1.5 px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold transition">
                     <i class="fa-solid fa-file-arrow-down"></i>
-                    <span>Export</span>
+                    <span class="hidden sm:inline">Export</span>
                 </button>
             </div>
         </div>
@@ -101,35 +95,58 @@
     <!-- Main Content Container -->
     <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
         
-        <!-- Welcome & Quick Presets -->
-        <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 pb-4 border-b border-slate-200/80 gap-4">
+        <!-- Header & Date -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-2">
             <div>
                 <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 flex items-center gap-2">
-                    Hello, Farmers <span class="text-2xl">👋</span>
+                    Hello, Farmers <span class="text-2xl">🌾</span>
                 </h1>
-                <p class="text-sm text-slate-500 mt-1 flex items-center gap-2">
-                    <span id="current-date-text">Sunday, 23 Nov 2026</span>
+                <p class="text-sm text-slate-500 mt-0.5 flex items-center gap-2">
+                    <span id="current-date-text">Sunday, 01 Dec 2024</span>
                     <span>•</span>
-                    <span class="text-agro-700 font-medium"><i class="fa-solid fa-location-dot mr-1"></i>Precision Microclimate Advisory</span>
+                    <span class="text-agro-700 font-semibold"><i class="fa-solid fa-location-dot mr-1"></i>Precision Microclimate & Crop Intelligence</span>
                 </p>
             </div>
 
-            <!-- Demo Scenarios Buttons -->
-            <div class="flex items-center gap-2 flex-wrap">
-                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Quick Demos:</span>
-                <button onclick="applyPreset('Mangaluru', 'Rice', 'Clay soil', 'Vegetative / Growing stage')" class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-white border border-slate-200 hover:border-agro-500 hover:text-agro-700 transition">🍚 Mangaluru Rice</button>
-                <button onclick="applyPreset('Ludhiana', 'Wheat', 'Loamy soil', 'Flowering / Panicle stage')" class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-white border border-slate-200 hover:border-agro-500 hover:text-agro-700 transition">🌾 Punjab Wheat</button>
-                <button onclick="applyPreset('Nagpur', 'Cotton', 'Black soil', 'Vegetative / Growing stage')" class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-white border border-slate-200 hover:border-agro-500 hover:text-agro-700 transition">☁️ Nagpur Cotton</button>
-                <button onclick="applyPreset('Bengaluru', 'Tomato', 'Red soil', 'Flowering / Panicle stage')" class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-white border border-slate-200 hover:border-agro-500 hover:text-agro-700 transition">🍅 Bangalore Tomato</button>
+            <!-- Quick Demo Pills -->
+            <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider mr-1">Presets:</span>
+                <button onclick="applyPreset('Mangaluru', 'Rice', 'Clay soil', 'Vegetative / Growing stage')" class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-white border border-slate-200 hover:border-agro-500 hover:text-agro-700 transition shadow-2xs">🍚 Mangaluru</button>
+                <button onclick="applyPreset('Ludhiana', 'Wheat', 'Loamy soil', 'Flowering / Panicle stage')" class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-white border border-slate-200 hover:border-agro-500 hover:text-agro-700 transition shadow-2xs">🌾 Punjab</button>
+                <button onclick="applyPreset('Nagpur', 'Cotton', 'Black soil', 'Vegetative / Growing stage')" class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-white border border-slate-200 hover:border-agro-500 hover:text-agro-700 transition shadow-2xs">☁️ Nagpur</button>
+                <button onclick="applyPreset('Bengaluru', 'Tomato', 'Red soil', 'Flowering / Panicle stage')" class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-white border border-slate-200 hover:border-agro-500 hover:text-agro-700 transition shadow-2xs">🍅 Bengaluru</button>
+            </div>
+        </div>
+
+        <!-- 🔍 PROMINENT SEARCH BAR (Matching Dribbble Mockup) -->
+        <div class="mb-6">
+            <div class="relative w-full max-w-3xl">
+                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-agro-600 text-base">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </div>
+                <input 
+                    type="text" 
+                    id="universal-search-input" 
+                    placeholder="Search location, district, or crop (e.g. Mangaluru, Rice, Punjab, Tomato)..." 
+                    class="w-full pl-11 pr-28 py-3.5 bg-white border-2 border-agro-200 rounded-2xl text-sm font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:border-agro-600 focus:ring-4 focus:ring-agro-100 shadow-sm transition"
+                >
+                <button 
+                    onclick="handleUniversalSearch()" 
+                    id="search-action-btn"
+                    class="absolute inset-y-1.5 right-1.5 px-4 bg-agro-700 hover:bg-agro-800 text-white rounded-xl text-xs font-bold shadow-sm transition flex items-center space-x-1.5"
+                >
+                    <i class="fa-solid fa-bolt text-amber-300"></i>
+                    <span>Analyze</span>
+                </button>
             </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-            <!-- LEFT COLUMN: FARM INPUTS, LIVE WEATHER & COMMODITIES (5 cols) -->
+            <!-- LEFT COLUMN: LIVE WEATHER & COMMODITIES (5 cols) -->
             <div class="lg:col-span-5 space-y-6">
 
-                <!-- 1. Hero Weather Card (Inspired by Dribbble design) -->
+                <!-- 1. Hero Weather Card (Inspired by Dribbble center design) -->
                 <div class="hero-weather-bg rounded-3xl p-6 text-white shadow-xl shadow-agro-900/10 relative overflow-hidden">
                     <div class="absolute -right-8 -top-8 w-40 h-40 bg-white/5 rounded-full blur-2xl pointer-events-none"></div>
 
@@ -144,7 +161,7 @@
                     <div class="flex items-center justify-between mb-6">
                         <div>
                             <div class="text-5xl font-black tracking-tight" id="weather-temp">+29.5°C</div>
-                            <div class="text-agro-200 text-sm mt-1" id="weather-condition-text">Partly Cloudy • Calm Wind</div>
+                            <div class="text-agro-200 text-sm mt-1" id="weather-condition-text">Partly Cloudy • Optimal Growth</div>
                         </div>
                         <div class="text-5xl text-amber-300 drop-shadow-md">
                             <i class="fa-solid fa-cloud-sun"></i>
@@ -185,7 +202,7 @@
                 <div class="glass-card rounded-2xl p-5 shadow-sm">
                     <div class="flex items-center justify-between mb-3">
                         <h2 class="text-sm font-bold text-slate-800 uppercase tracking-wide">Commodities & Food</h2>
-                        <span class="text-xs text-agro-600 font-semibold cursor-pointer">View All</span>
+                        <span class="text-xs text-agro-600 font-semibold cursor-pointer">Live Selection</span>
                     </div>
 
                     <div class="grid grid-cols-5 gap-2" id="commodity-grid">
@@ -221,7 +238,7 @@
                     <div>
                         <label class="block text-xs font-bold text-slate-600 mb-1">Location / District</label>
                         <div class="relative">
-                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-xs"></i>
+                            <i class="fa-solid fa-map-pin absolute left-3 top-3 text-slate-400 text-xs"></i>
                             <input type="text" id="input-location" value="Mangaluru" class="w-full pl-8 pr-3 py-2 text-sm rounded-xl border border-slate-200 focus:outline-none focus:border-agro-600 focus:ring-1 focus:ring-agro-600">
                         </div>
                     </div>
@@ -263,13 +280,13 @@
                 <div class="glass-card rounded-2xl p-5 shadow-sm border border-agro-100">
                     <div class="flex items-center justify-between mb-3">
                         <h2 class="text-sm font-bold text-slate-800 uppercase tracking-wide">My Fields Overview</h2>
-                        <span class="text-xs bg-agro-100 text-agro-800 font-bold px-2 py-0.5 rounded-full">Active Sensor</span>
+                        <span class="text-xs bg-agro-100 text-agro-800 font-bold px-2 py-0.5 rounded-full">Telemetry Active</span>
                     </div>
                     <div class="flex items-center space-x-4">
                         <div class="w-16 h-16 rounded-xl bg-cover bg-center shadow-inner flex-shrink-0" style="background-image: url('https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=200&q=80');"></div>
                         <div class="flex-1 min-w-0">
-                            <h3 class="text-sm font-bold text-slate-900 truncate" id="field-card-title">North Paddy Block #1</h3>
-                            <p class="text-xs text-slate-500 mt-0.5">Est. Yield: <strong class="text-agro-700 font-bold">7,200 kg/ha</strong></p>
+                            <h3 class="text-sm font-bold text-slate-900 truncate" id="field-card-title">Rice Field Block #1</h3>
+                            <p class="text-xs text-slate-500 mt-0.5">Est. Yield Potential: <strong class="text-agro-700 font-bold">7,200 kg/ha</strong></p>
                             <p class="text-[11px] text-slate-400 mt-1">Optimal vegetative growth • Moisture 68%</p>
                         </div>
                     </div>
@@ -277,7 +294,7 @@
 
             </div>
 
-            <!-- RIGHT COLUMN: MULTI-AGENT ADVISORY & GEMINI WORKFLOW (7 cols) -->
+            <!-- RIGHT COLUMN: MULTI-AGENT ADVISORY & REASONING (7 cols) -->
             <div class="lg:col-span-7 space-y-6">
 
                 <!-- 1. The Four Agents Ribbon -->
@@ -341,7 +358,7 @@
                             <i class="fa-solid fa-clipboard-check"></i> Action Advisory
                         </button>
                         <button onclick="switchTab('chat')" id="tab-btn-chat" class="py-2.5 border-b-2 border-transparent hover:text-agro-700 flex items-center gap-1.5">
-                            <i class="fa-solid fa-comments"></i> Ask Gemini Agent
+                            <i class="fa-solid fa-comments"></i> Ask AI Assistant
                         </button>
                         <button onclick="switchTab('timeline')" id="tab-btn-timeline" class="py-2.5 border-b-2 border-transparent hover:text-agro-700 flex items-center gap-1.5">
                             <i class="fa-solid fa-network-wired"></i> Agent Message Bus
@@ -355,7 +372,7 @@
                         <div class="bg-agro-50/60 border border-agro-100 rounded-xl p-4">
                             <div class="flex items-center space-x-2 text-agro-800 font-bold text-xs uppercase mb-2">
                                 <i class="fa-solid fa-sparkles text-amber-500"></i>
-                                <span>Executive Advisory Summary</span>
+                                <span>Autonomous Advisory Synthesis</span>
                             </div>
                             <div id="executive-summary-text" class="text-sm text-slate-700 leading-relaxed space-y-2">
                                 Loading multi-agent synthesis...
@@ -433,10 +450,10 @@
                         </div>
                     </div>
 
-                    <!-- Tab 2: Ask Gemini AI Agent -->
+                    <!-- Tab 2: Ask AI Assistant -->
                     <div id="tab-content-chat" class="p-6 hidden space-y-4">
                         <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs text-slate-600">
-                            💡 Ask questions about pest control, spraying feasibility, or fertilizer timing. Answers are synthesized by <strong>Google Gemini AI</strong> using live field data.
+                            💡 Ask questions about pest control, spraying feasibility, or fertilizer timing. Answers are synthesized in real-time using live field telemetry and soil physics.
                         </div>
 
                         <!-- Chat Messages Container -->
@@ -479,7 +496,7 @@
 
     <!-- Footer -->
     <footer class="bg-white border-t border-slate-200 mt-12 py-6 text-center text-xs text-slate-500">
-        <p>AgroMind AI — Autonomous Smart Farming System &bull; Open-Meteo &bull; Google Gemini AI</p>
+        <p>AgroMind AI — Autonomous Smart Farming System &bull; Open-Meteo Telemetry &bull; Cognitive Decision Architecture</p>
     </footer>
 
     <!-- App Logic -->

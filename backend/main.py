@@ -17,7 +17,7 @@ load_dotenv()
 
 app = FastAPI(
     title="AgroMind AI - Multi-Agent Smart Farming Backend API",
-    description="RESTful API & Web Application coordinating autonomous agricultural AI agents with live Open-Meteo telemetry, conflict arbitration, and Google Gemini AI.",
+    description="RESTful API & Web Application coordinating autonomous agricultural AI agents with live Open-Meteo telemetry and conflict arbitration.",
     version="1.0.0"
 )
 
@@ -41,12 +41,12 @@ class AdvisoryRequest(BaseModel):
     soil: str = Field(default="Clay soil", description="Soil type")
     stage: str = Field(default="Vegetative / Growing stage", description="Crop growth stage")
     farm_size_acres: float = Field(default=2.5, ge=0.1, le=10000.0, description="Field size in acres")
-    gemini_api_key: Optional[str] = Field(default=None, description="Optional override for Gemini API Key")
+    gemini_api_key: Optional[str] = Field(default=None, description="Optional override for API Key")
 
 class QuestionRequest(BaseModel):
     question: str = Field(..., description="Farmer's question")
     context: Dict[str, Any] = Field(default_factory=dict, description="Current field and weather context")
-    gemini_api_key: Optional[str] = Field(default=None, description="Optional override for Gemini API Key")
+    gemini_api_key: Optional[str] = Field(default=None, description="Optional override for API Key")
 
 # Global instances of agents and services
 weather_agent = WeatherAgent()
@@ -77,12 +77,12 @@ def health_check():
             "Farm Recommendation Agent",
             "Coordinator & Report Agent"
         ],
-        "gemini_api_configured": gemini_service.is_configured()
+        "ai_engine_active": gemini_service.is_configured()
     }
 
-@app.get("/api/gemini/status")
-def gemini_status():
-    """Checks the status of the backend Gemini API integration."""
+@app.get("/api/ai/status")
+def ai_status():
+    """Checks the status of the backend AI integration."""
     return gemini_service.test_connection()
 
 @app.get("/api/weather")
@@ -113,7 +113,7 @@ def generate_advisory(req: AdvisoryRequest):
     """
     Main Multi-Agent Coordination Endpoint:
     Dispatches tasks to WeatherAgent, CropAgent, RecommendationAgent,
-    resolves operational conflicts, and synthesizes report with Gemini AI.
+    resolves operational conflicts, and synthesizes report with AI.
     """
     try:
         active_key = req.gemini_api_key or os.getenv("GEMINI_API_KEY")
@@ -131,10 +131,10 @@ def generate_advisory(req: AdvisoryRequest):
         raise HTTPException(status_code=500, detail=f"Advisory orchestration failed: {str(e)}")
 
 @app.post("/api/ask")
-def ask_gemini(req: QuestionRequest):
+def ask_ai(req: QuestionRequest):
     """
     Farmer Conversational Q&A Endpoint:
-    Provides context-aware answers to agricultural questions using Gemini AI.
+    Provides context-aware answers to agricultural questions using the AgroMind AI Engine.
     """
     try:
         active_key = req.gemini_api_key or os.getenv("GEMINI_API_KEY")
@@ -143,7 +143,7 @@ def ask_gemini(req: QuestionRequest):
         return {
             "question": req.question,
             "answer": answer,
-            "powered_by": "Gemini AI" if svc.is_configured() else "AgroMind Agronomic Engine"
+            "powered_by": "AgroMind AI Engine"
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Question processing failed: {str(e)}")

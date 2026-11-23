@@ -6,7 +6,7 @@ load_dotenv()
 
 class GeminiService:
     """
-    Backend service for Google Gemini AI integration.
+    Backend service for AgroMind AI integration.
     Handles synthesis of multi-agent recommendations, microclimate reasoning,
     and conversational agronomic Q&A for farmers.
     """
@@ -44,18 +44,17 @@ class GeminiService:
         if not self.is_configured():
             return {
                 "status": "unconfigured",
-                "message": "GEMINI_API_KEY is not set in backend .env. Rule-based agronomic engine active."
+                "message": "API key is not set in backend .env. Rule-based agronomic engine active."
             }
-        result = self._call_model("Hello, reply with 'Gemini AI online for AgroMind'.")
+        result = self._call_model("Hello, reply with 'AI Engine online for AgroMind'.")
         if result:
             return {
                 "status": "connected",
-                "model": "gemini-3.5-flash-lite",
                 "message": result
             }
         return {
             "status": "error",
-            "message": "Gemini connection attempt failed."
+            "message": "AI connection attempt failed."
         }
 
     def synthesize_advisory(
@@ -67,8 +66,8 @@ class GeminiService:
         conflicts: List[Dict[str, str]]
     ) -> str:
         """
-        Uses Gemini to synthesize an expert, multi-agent agronomic summary.
-        Falls back to rule-based synthesis if Gemini is unavailable.
+        Synthesizes an expert, multi-agent agronomic summary.
+        Falls back to rule-based synthesis if AI service is unavailable.
         """
         if self.is_configured():
             prompt = f"""
@@ -112,7 +111,7 @@ class GeminiService:
 
     def answer_question(self, question: str, context: Dict[str, Any]) -> str:
         """
-        Allows farmers to chat and ask follow-up questions to Gemini AI
+        Allows farmers to chat and ask follow-up questions to AgroMind AI
         with full farm context injected.
         """
         if self.is_configured():
