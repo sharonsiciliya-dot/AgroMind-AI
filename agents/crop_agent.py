@@ -1,4 +1,4 @@
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 
 class CropAgent:
     """
@@ -7,6 +7,7 @@ class CropAgent:
     - Analyses the selected crop, growth stage, and soil characteristics.
     - Evaluates water, nutrient, and physiological needs.
     - Highlights stage-specific crop vulnerabilities, pests, and optimal conditions.
+    - Supports dynamic registration of new custom crops and food items.
     """
     def __init__(self):
         self.name = "Crop Analysis Agent"
@@ -15,6 +16,7 @@ class CropAgent:
         # Comprehensive knowledge base for common regional & staple crops
         self.crop_database = {
             "Rice": {
+                "icon": "🍚",
                 "ideal_temp_min": 20, "ideal_temp_max": 35,
                 "water_need": "High",
                 "best_soils": ["Clay soil", "Clay Loam", "Loamy soil"],
@@ -46,6 +48,7 @@ class CropAgent:
                 }
             },
             "Wheat": {
+                "icon": "🌾",
                 "ideal_temp_min": 14, "ideal_temp_max": 25,
                 "water_need": "Medium",
                 "best_soils": ["Loamy soil", "Clay Loam", "Alluvial soil"],
@@ -77,6 +80,7 @@ class CropAgent:
                 }
             },
             "Corn / Maize": {
+                "icon": "🌽",
                 "ideal_temp_min": 18, "ideal_temp_max": 32,
                 "water_need": "Medium to High",
                 "best_soils": ["Loamy soil", "Sandy Loam", "Red soil"],
@@ -108,6 +112,7 @@ class CropAgent:
                 }
             },
             "Cotton": {
+                "icon": "☁️",
                 "ideal_temp_min": 21, "ideal_temp_max": 35,
                 "water_need": "Medium",
                 "best_soils": ["Black soil (Regur)", "Clay Loam", "Deep Alluvial"],
@@ -139,6 +144,7 @@ class CropAgent:
                 }
             },
             "Tomato": {
+                "icon": "🍅",
                 "ideal_temp_min": 18, "ideal_temp_max": 30,
                 "water_need": "Medium",
                 "best_soils": ["Loamy soil", "Sandy Loam", "Red soil"],
@@ -166,6 +172,38 @@ class CropAgent:
                         "nutrient": "Calcium and Potassium maintenance",
                         "water_rule": "Reduce watering slightly to improve sugar brix and shelf life",
                         "vulnerabilities": ["Fruit borer", "Anthracnose rot"]
+                    }
+                }
+            },
+            "Potato": {
+                "icon": "🥔",
+                "ideal_temp_min": 15, "ideal_temp_max": 24,
+                "water_need": "Medium",
+                "best_soils": ["Loamy soil", "Sandy Loam"],
+                "stages": {
+                    "Seedling / Germination": {
+                        "focus": "Sprout emergence from seed tubers",
+                        "nutrient": "Basal application of NPK 10:26:26 with organic compost",
+                        "water_rule": "Maintain light moisture; avoid tuber rotting",
+                        "vulnerabilities": ["Cutworms", "Black scurf"]
+                    },
+                    "Vegetative / Growing stage": {
+                        "focus": "Stolon formation and tuber initiation",
+                        "nutrient": "Earthing up with top-dressed Nitrogen",
+                        "water_rule": "Consistent moisture to prevent irregular tuber development",
+                        "vulnerabilities": ["Late Blight (Phytophthora)", "Aphids", "Early Blight"]
+                    },
+                    "Flowering / Panicle stage": {
+                        "focus": "Rapid tuber bulking",
+                        "nutrient": "Potassium-rich foliar feed (0-0-50)",
+                        "water_rule": "Peak water demand; avoid both drought and waterlogging",
+                        "vulnerabilities": ["Tuber rot in saturated soils", "Hollow heart"]
+                    },
+                    "Harvesting / Maturity": {
+                        "focus": "Skin hardening and haulm cutting",
+                        "nutrient": "None",
+                        "water_rule": "Stop irrigation 10-12 days before digging",
+                        "vulnerabilities": ["Skin bruising", "Soft rot in storage"]
                     }
                 }
             }
@@ -210,6 +248,45 @@ class CropAgent:
             }
         }
 
+    def register_crop(self, name: str, icon: str = "🌱", water_need: str = "Medium",
+                      best_soil: str = "Loamy soil", ideal_min: int = 18, ideal_max: int = 30) -> Dict[str, Any]:
+        """Dynamically registers a new crop / food item into the knowledge base."""
+        clean_name = name.strip()
+        self.crop_database[clean_name] = {
+            "icon": icon or "🌱",
+            "ideal_temp_min": ideal_min,
+            "ideal_temp_max": ideal_max,
+            "water_need": water_need,
+            "best_soils": [best_soil],
+            "stages": {
+                "Seedling / Germination": {
+                    "focus": f"Sprouting and establishment of {clean_name}",
+                    "nutrient": "Starter organic compost with balanced NPK ratio",
+                    "water_rule": "Maintain light surface dampness",
+                    "vulnerabilities": ["Damping off", "Root rot", "Seedling wilt"]
+                },
+                "Vegetative / Growing stage": {
+                    "focus": f"Canopy growth and vegetative biomass expansion for {clean_name}",
+                    "nutrient": "Nitrogen-rich fertilizer and micronutrient support",
+                    "water_rule": f"Regular scheduled watering aligned with {water_need.lower()} demand",
+                    "vulnerabilities": ["Leaf spot", "Aphids / sucking pests", "Nutrient deficiency"]
+                },
+                "Flowering / Panicle stage": {
+                    "focus": f"Reproductive flower and fruit set in {clean_name}",
+                    "nutrient": "Potassium & Phosphorus boost for fruit/seed quality",
+                    "water_rule": "Critical uniform moisture; avoid sudden dry spells",
+                    "vulnerabilities": ["Blossom drop", "Fungal blight", "Fruit borer"]
+                },
+                "Harvesting / Maturity": {
+                    "focus": f"Ripening and harvest readiness of {clean_name}",
+                    "nutrient": "Cease chemical fertilizer",
+                    "water_rule": "Withhold irrigation 7-10 days before harvest",
+                    "vulnerabilities": ["Pre-harvest rot from wet conditions", "Mechanical injury"]
+                }
+            }
+        }
+        return self.crop_database[clean_name]
+
     def analyze(self, crop: str, soil: str, stage: str) -> Dict[str, Any]:
         # Normalize crop name
         crop_match = None
@@ -220,7 +297,9 @@ class CropAgent:
         
         # Default fallback crop structure if unknown
         if not crop_match:
-            crop_match = "Rice" # baseline reference
+            # Register unknown crop on-the-fly!
+            self.register_crop(crop)
+            crop_match = crop
 
         crop_info = self.crop_database[crop_match]
 
@@ -252,7 +331,8 @@ class CropAgent:
         return {
             "agent": self.name,
             "role": self.role,
-            "crop": crop,
+            "crop": crop_match,
+            "icon": crop_info.get("icon", "🌱"),
             "matched_crop_profile": crop_match,
             "growth_stage": stage_match,
             "stage_focus": stage_data["focus"],
@@ -264,7 +344,7 @@ class CropAgent:
             "soil_suitability": soil_suitability,
             "optimal_temp_range": f"{crop_info['ideal_temp_min']}°C - {crop_info['ideal_temp_max']}°C",
             "summary": (
-                f"Crop Profile: {crop} at {stage_match} in {soil_match}. "
+                f"Crop Profile: {crop_match} at {stage_match} in {soil_match}. "
                 f"Soil compatibility is {soil_suitability}. Key focus: {stage_data['focus']}. "
                 f"Target nutrient: {stage_data['nutrient']}."
             )

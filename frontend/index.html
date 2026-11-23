@@ -118,7 +118,7 @@
             </div>
         </div>
 
-        <!-- 🔍 PROMINENT SEARCH BAR (Matching Dribbble Mockup) -->
+        <!-- 🔍 PROMINENT SEARCH BAR -->
         <div class="mb-6">
             <div class="relative w-full max-w-3xl">
                 <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-agro-600 text-base">
@@ -127,7 +127,7 @@
                 <input 
                     type="text" 
                     id="universal-search-input" 
-                    placeholder="Search location, district, or crop (e.g. Mangaluru, Rice, Punjab, Tomato)..." 
+                    placeholder="Search location, district, or crop (e.g. Mangaluru, Rice, Potato, Tomato)..." 
                     class="w-full pl-11 pr-28 py-3.5 bg-white border-2 border-agro-200 rounded-2xl text-sm font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:border-agro-600 focus:ring-4 focus:ring-agro-100 shadow-sm transition"
                 >
                 <button 
@@ -146,7 +146,7 @@
             <!-- LEFT COLUMN: LIVE WEATHER & COMMODITIES (5 cols) -->
             <div class="lg:col-span-5 space-y-6">
 
-                <!-- 1. Hero Weather Card (Inspired by Dribbble center design) -->
+                <!-- 1. Hero Weather Card -->
                 <div class="hero-weather-bg rounded-3xl p-6 text-white shadow-xl shadow-agro-900/10 relative overflow-hidden">
                     <div class="absolute -right-8 -top-8 w-40 h-40 bg-white/5 rounded-full blur-2xl pointer-events-none"></div>
 
@@ -198,34 +198,22 @@
                     </div>
                 </div>
 
-                <!-- 2. Commodities & Food Selector (Dribbble horizontal row) -->
+                <!-- 2. Commodities & Food Selector with "+ Add Food Item" Option -->
                 <div class="glass-card rounded-2xl p-5 shadow-sm">
                     <div class="flex items-center justify-between mb-3">
-                        <h2 class="text-sm font-bold text-slate-800 uppercase tracking-wide">Commodities & Food</h2>
-                        <span class="text-xs text-agro-600 font-semibold cursor-pointer">Live Selection</span>
+                        <div class="flex items-center space-x-2">
+                            <h2 class="text-sm font-bold text-slate-800 uppercase tracking-wide">Commodities & Food</h2>
+                        </div>
+                        <!-- ➕ ADD FOOD ITEM BUTTON -->
+                        <button onclick="openAddCropModal()" class="flex items-center space-x-1 px-3 py-1 bg-agro-700 hover:bg-agro-800 text-white rounded-lg text-xs font-bold shadow-xs transition">
+                            <i class="fa-solid fa-plus text-[10px]"></i>
+                            <span>Add Food Item</span>
+                        </button>
                     </div>
 
-                    <div class="grid grid-cols-5 gap-2" id="commodity-grid">
-                        <button onclick="selectCrop('Rice')" data-crop="Rice" class="commodity-btn flex flex-col items-center p-2.5 rounded-xl border-2 border-agro-500 bg-agro-50 transition">
-                            <span class="text-2xl mb-1">🍚</span>
-                            <span class="text-xs font-bold text-agro-900">Rice</span>
-                        </button>
-                        <button onclick="selectCrop('Corn / Maize')" data-crop="Corn / Maize" class="commodity-btn flex flex-col items-center p-2.5 rounded-xl border border-slate-200 bg-white hover:border-agro-300 transition">
-                            <span class="text-2xl mb-1">🌽</span>
-                            <span class="text-xs font-bold text-slate-700">Corn</span>
-                        </button>
-                        <button onclick="selectCrop('Wheat')" data-crop="Wheat" class="commodity-btn flex flex-col items-center p-2.5 rounded-xl border border-slate-200 bg-white hover:border-agro-300 transition">
-                            <span class="text-2xl mb-1">🌾</span>
-                            <span class="text-xs font-bold text-slate-700">Wheat</span>
-                        </button>
-                        <button onclick="selectCrop('Cotton')" data-crop="Cotton" class="commodity-btn flex flex-col items-center p-2.5 rounded-xl border border-slate-200 bg-white hover:border-agro-300 transition">
-                            <span class="text-2xl mb-1">☁️</span>
-                            <span class="text-xs font-bold text-slate-700">Cotton</span>
-                        </button>
-                        <button onclick="selectCrop('Tomato')" data-crop="Tomato" class="commodity-btn flex flex-col items-center p-2.5 rounded-xl border border-slate-200 bg-white hover:border-agro-300 transition">
-                            <span class="text-2xl mb-1">🍅</span>
-                            <span class="text-xs font-bold text-slate-700">Tomato</span>
-                        </button>
+                    <!-- Dynamic Commodities Grid -->
+                    <div class="grid grid-cols-4 sm:grid-cols-6 gap-2" id="commodity-grid">
+                        <!-- Populated dynamically via JS -->
                     </div>
                 </div>
 
@@ -276,7 +264,7 @@
                     </button>
                 </div>
 
-                <!-- 4. "My Fields" Card (Matching right mockup) -->
+                <!-- 4. "My Fields" Card -->
                 <div class="glass-card rounded-2xl p-5 shadow-sm border border-agro-100">
                     <div class="flex items-center justify-between mb-3">
                         <h2 class="text-sm font-bold text-slate-800 uppercase tracking-wide">My Fields Overview</h2>
@@ -493,6 +481,75 @@
         </div>
 
     </main>
+
+    <!-- 🌟 MODAL: ADD FOOD ITEM / COMMODITY -->
+    <div id="add-crop-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl border border-slate-100 relative">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 rounded-lg bg-agro-100 text-agro-700 flex items-center justify-center text-sm">
+                        <i class="fa-solid fa-plus"></i>
+                    </div>
+                    <h3 class="text-base font-bold text-slate-800">Add New Food Item / Crop</h3>
+                </div>
+                <button onclick="closeAddCropModal()" class="text-slate-400 hover:text-slate-600 text-base">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="py-4 space-y-3.5">
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1">Crop / Food Item Name</label>
+                    <input type="text" id="new-crop-name" placeholder="e.g. Potato, Olive, Grapes, Soybean, Onion" class="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 focus:outline-none focus:border-agro-600 focus:ring-1 focus:ring-agro-600">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1.5">Select Icon / Emoji</label>
+                    <div class="flex flex-wrap gap-2" id="icon-picker">
+                        <button type="button" onclick="setNewCropIcon('🥔')" class="icon-opt w-9 h-9 text-lg rounded-xl border border-slate-200 hover:border-agro-500 flex items-center justify-center bg-slate-50">🥔</button>
+                        <button type="button" onclick="setNewCropIcon('🫒')" class="icon-opt w-9 h-9 text-lg rounded-xl border border-slate-200 hover:border-agro-500 flex items-center justify-center bg-slate-50">🫒</button>
+                        <button type="button" onclick="setNewCropIcon('🍇')" class="icon-opt w-9 h-9 text-lg rounded-xl border border-slate-200 hover:border-agro-500 flex items-center justify-center bg-slate-50">🍇</button>
+                        <button type="button" onclick="setNewCropIcon('🧅')" class="icon-opt w-9 h-9 text-lg rounded-xl border border-slate-200 hover:border-agro-500 flex items-center justify-center bg-slate-50">🧅</button>
+                        <button type="button" onclick="setNewCropIcon('🫘')" class="icon-opt w-9 h-9 text-lg rounded-xl border border-slate-200 hover:border-agro-500 flex items-center justify-center bg-slate-50">🫘</button>
+                        <button type="button" onclick="setNewCropIcon('🥕')" class="icon-opt w-9 h-9 text-lg rounded-xl border border-slate-200 hover:border-agro-500 flex items-center justify-center bg-slate-50">🥕</button>
+                        <button type="button" onclick="setNewCropIcon('🍓')" class="icon-opt w-9 h-9 text-lg rounded-xl border border-slate-200 hover:border-agro-500 flex items-center justify-center bg-slate-50">🍓</button>
+                        <button type="button" onclick="setNewCropIcon('☕')" class="icon-opt w-9 h-9 text-lg rounded-xl border border-slate-200 hover:border-agro-500 flex items-center justify-center bg-slate-50">☕</button>
+                        <button type="button" onclick="setNewCropIcon('🌱')" class="icon-opt w-9 h-9 text-lg rounded-xl border-2 border-agro-500 bg-agro-50 flex items-center justify-center">🌱</button>
+                    </div>
+                    <input type="hidden" id="new-crop-selected-icon" value="🌱">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">Water Need</label>
+                        <select id="new-crop-water" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-agro-600 bg-white">
+                            <option value="Low">Low (Drought-tolerant)</option>
+                            <option value="Medium" selected>Medium</option>
+                            <option value="High">High (Moisture-loving)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">Preferred Soil</label>
+                        <select id="new-crop-soil" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-agro-600 bg-white">
+                            <option value="Clay soil">Clay soil</option>
+                            <option value="Loamy soil" selected>Loamy soil</option>
+                            <option value="Sandy soil">Sandy soil</option>
+                            <option value="Black soil">Black soil</option>
+                            <option value="Red soil">Red soil</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-2 flex items-center space-x-2">
+                <button type="button" onclick="closeAddCropModal()" class="flex-1 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-bold text-slate-600 transition">Cancel</button>
+                <button type="button" onclick="submitNewCrop()" id="submit-crop-btn" class="flex-1 py-2.5 rounded-xl bg-agro-700 hover:bg-agro-800 text-white text-xs font-bold shadow-md shadow-agro-700/20 transition flex items-center justify-center space-x-1.5">
+                    <i class="fa-solid fa-check"></i>
+                    <span>Save & Select</span>
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- Footer -->
     <footer class="bg-white border-t border-slate-200 mt-12 py-6 text-center text-xs text-slate-500">

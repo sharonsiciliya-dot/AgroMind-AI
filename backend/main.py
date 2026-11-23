@@ -48,6 +48,14 @@ class QuestionRequest(BaseModel):
     context: Dict[str, Any] = Field(default_factory=dict, description="Current field and weather context")
     gemini_api_key: Optional[str] = Field(default=None, description="Optional override for API Key")
 
+class AddCropRequest(BaseModel):
+    name: str = Field(..., description="Name of crop / food item (e.g. Potato, Olive, Grapes)")
+    icon: Optional[str] = Field(default="🌱", description="Emoji icon (e.g. 🥔, 🫒, 🍇)")
+    water_need: Optional[str] = Field(default="Medium", description="Low, Medium, or High")
+    best_soil: Optional[str] = Field(default="Loamy soil", description="Preferred soil classification")
+    ideal_min: Optional[int] = Field(default=18, description="Minimum ideal temperature in °C")
+    ideal_max: Optional[int] = Field(default=30, description="Maximum ideal temperature in °C")
+
 # Global instances of agents and services
 weather_agent = WeatherAgent()
 crop_agent = CropAgent()
@@ -97,7 +105,16 @@ def get_weather(location: str = Query(..., description="City or district name"))
 @app.get("/api/crops")
 def get_crop_data():
     """Returns available crop profiles, growth stages, and soil properties."""
+    crops_list = []
+    for name, data in crop_agent.crop_database.items():
+        crops_list.append({
+            "name": name,
+            "icon": data.get("icon", "🌱"),
+            "water_need": data.get("water_need", "Medium"),
+            "best_soils": data.get("best_soils", ["Loamy soil"])
+        })
     return {
+        "crops": crops_list,
         "available_crops": list(crop_agent.crop_database.keys()),
         "available_soils": list(crop_agent.soil_properties.keys()),
         "stages": [
@@ -107,6 +124,33 @@ def get_crop_data():
             "Harvesting / Maturity"
         ]
     }
+
+@app.post("/api/crops")
+def add_crop(req: AddCropRequest):
+    """
+    Registers a new crop / food item dynamically into the Crop Agent database.
+    """
+    try:
+        new_profile = crop_agent.register_crop(
+            name=req.name,
+            icon=req.icon or "🌱",
+            water_need=req.water_need or "Medium",
+            best_soil=req.best_soil or "Loamy soil",
+            ideal_min=req.ideal_min or 18,
+            ideal_max=req.ideal_max or 30
+        )
+        return {
+            "status": "success",
+            "message": f"Crop '{req.name}' successfully added to AgroMind knowledge base.",
+            "crop": {
+                "name": req.name,
+                "icon": req.icon or "🌱",
+                "water_need": req.water_need or "Medium",
+                "profile": new_profile
+            }
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to register crop: {str(e)}")
 
 @app.post("/api/advisory")
 def generate_advisory(req: AdvisoryRequest):
@@ -118,6 +162,10 @@ def generate_advisory(req: AdvisoryRequest):
     try:
         active_key = req.gemini_api_key or os.getenv("GEMINI_API_KEY")
         coordinator = CoordinatorAgent(gemini_api_key=active_key)
+
+        # Ensure custom crop is registered in coordinator's crop agent as well
+        if req.crop in crop_agent.crop_database and req.crop not in coordinator.crop_agent.crop_database:
+            coordinator.crop_agent.crop_database[req.crop] = crop_agent.crop_database[req.crop]
 
         report = coordinator.run_workflow(
             location=req.location,

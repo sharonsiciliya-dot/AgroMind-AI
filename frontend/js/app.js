@@ -3,6 +3,16 @@
 let currentReportData = null;
 let selectedCropName = "Rice";
 
+// Default commodities list
+let availableCrops = [
+    { name: "Rice", icon: "🍚" },
+    { name: "Corn / Maize", icon: "🌽" },
+    { name: "Wheat", icon: "🌾" },
+    { name: "Cotton", icon: "☁️" },
+    { name: "Tomato", icon: "🍅" },
+    { name: "Potato", icon: "🥔" }
+];
+
 document.addEventListener("DOMContentLoaded", () => {
     // Set dynamic current date text
     const now = new Date();
@@ -10,7 +20,16 @@ document.addEventListener("DOMContentLoaded", () => {
     const dateEl = document.getElementById("current-date-text");
     if (dateEl) dateEl.innerText = now.toLocaleDateString("en-US", options);
 
-    // Initial run
+    // Load custom crops from localStorage if any
+    loadSavedCrops();
+
+    // Fetch crops from backend
+    fetchBackendCrops();
+
+    // Render commodity grid
+    renderCommodityGrid();
+
+    // Initial advisory run
     runAdvisory();
 
     // Universal Search Bar Enter key trigger
@@ -30,6 +49,158 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
+// Load custom crops from localStorage
+function loadSavedCrops() {
+    try {
+        const saved = localStorage.getItem("agromind_custom_crops");
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            parsed.forEach(c => {
+                if (!availableCrops.some(existing => existing.name.toLowerCase() === c.name.toLowerCase())) {
+                    availableCrops.push(c);
+                }
+            });
+        }
+    } catch (e) {
+        console.warn("Could not load custom crops from localStorage", e);
+    }
+}
+
+// Fetch crop list from backend API
+async function fetchBackendCrops() {
+    try {
+        const res = await fetch("/api/crops");
+        if (res.ok) {
+            const data = await res.json();
+            if (data.crops && data.crops.length > 0) {
+                data.crops.forEach(c => {
+                    if (!availableCrops.some(existing => existing.name.toLowerCase() === c.name.toLowerCase())) {
+                        availableCrops.push({ name: c.name, icon: c.icon || "🌱" });
+                    }
+                });
+                renderCommodityGrid();
+            }
+        }
+    } catch (e) {
+        // Fallback to defaults
+    }
+}
+
+// Render dynamic commodity buttons
+function renderCommodityGrid() {
+    const grid = document.getElementById("commodity-grid");
+    if (!grid) return;
+
+    let html = "";
+    availableCrops.forEach(c => {
+        const isSelected = (c.name.toLowerCase() === selectedCropName.toLowerCase());
+        const borderClass = isSelected ? "border-agro-500 bg-agro-50 border-2" : "border-slate-200 bg-white hover:border-agro-300";
+        const cleanDisplayName = c.name.split("/")[0].trim();
+        html += `
+            <button onclick="selectCrop('${c.name}')" data-crop="${c.name}" class="commodity-btn flex flex-col items-center p-2 rounded-xl border ${borderClass} transition shadow-2xs">
+                <span class="text-xl mb-0.5">${c.icon || '🌱'}</span>
+                <span class="text-[11px] font-bold text-slate-800 truncate w-full text-center">${cleanDisplayName}</span>
+            </button>
+        `;
+    });
+
+    // Add "+ Add" shortcut button at the end
+    html += `
+        <button onclick="openAddCropModal()" class="flex flex-col items-center justify-center p-2 rounded-xl border-2 border-dashed border-agro-300 bg-agro-50/50 hover:bg-agro-100/50 text-agro-700 transition">
+            <span class="text-base"><i class="fa-solid fa-plus"></i></span>
+            <span class="text-[10px] font-bold mt-0.5">Add</span>
+        </button>
+    `;
+
+    grid.innerHTML = html;
+}
+
+// Modal functions for adding a new crop
+function openAddCropModal() {
+    const modal = document.getElementById("add-crop-modal");
+    if (modal) {
+        modal.classList.remove("hidden");
+        document.getElementById("new-crop-name").focus();
+    }
+}
+
+function closeAddCropModal() {
+    const modal = document.getElementById("add-crop-modal");
+    if (modal) modal.classList.add("hidden");
+}
+
+function setNewCropIcon(icon) {
+    document.getElementById("new-crop-selected-icon").value = icon;
+    document.querySelectorAll(".icon-opt").forEach(btn => {
+        if (btn.innerText.trim() === icon) {
+            btn.classList.add("border-2", "border-agro-500", "bg-agro-50");
+            btn.classList.remove("border-slate-200", "bg-slate-50");
+        } else {
+            btn.classList.remove("border-2", "border-agro-500", "bg-agro-50");
+            btn.classList.add("border-slate-200", "bg-slate-50");
+        }
+    });
+}
+
+async function submitNewCrop() {
+    const nameInput = document.getElementById("new-crop-name");
+    const name = nameInput.value.trim();
+    if (!name) {
+        alert("Please enter a crop or food item name.");
+        return;
+    }
+
+    const icon = document.getElementById("new-crop-selected-icon").value || "🌱";
+    const water = document.getElementById("new-crop-water").value || "Medium";
+    const soil = document.getElementById("new-crop-soil").value || "Loamy soil";
+
+    const submitBtn = document.getElementById("submit-crop-btn");
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i><span>Saving...</span>`;
+    }
+
+    // 1. Post to backend
+    try {
+        await fetch("/api/crops", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                name: name,
+                icon: icon,
+                water_need: water,
+                best_soil: soil
+            })
+        });
+    } catch (e) {
+        console.warn("Backend crop registration warning:", e);
+    }
+
+    // 2. Add to local list and localStorage
+    const newCropObj = { name: name, icon: icon };
+    if (!availableCrops.some(c => c.name.toLowerCase() === name.toLowerCase())) {
+        availableCrops.push(newCropObj);
+        try {
+            const saved = JSON.parse(localStorage.getItem("agromind_custom_crops") || "[]");
+            saved.push(newCropObj);
+            localStorage.setItem("agromind_custom_crops", JSON.stringify(saved));
+        } catch (e) {}
+    }
+
+    // 3. Reset form and close modal
+    nameInput.value = "";
+    if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = `<i class="fa-solid fa-check"></i><span>Save & Select</span>`;
+    }
+    closeAddCropModal();
+
+    // 4. Update UI and immediately select the new crop
+    renderCommodityGrid();
+    document.getElementById("input-soil").value = soil;
+    selectCrop(name);
+}
+
 // Universal Search Handler
 function handleUniversalSearch() {
     const searchInput = document.getElementById("universal-search-input");
@@ -37,20 +208,10 @@ function handleUniversalSearch() {
     const query = searchInput.value.trim().toLowerCase();
     if (!query) return;
 
-    const cropsMap = {
-        "rice": "Rice",
-        "paddy": "Rice",
-        "wheat": "Wheat",
-        "corn": "Corn / Maize",
-        "maize": "Corn / Maize",
-        "cotton": "Cotton",
-        "tomato": "Tomato"
-    };
-
     let matchedCrop = null;
-    for (const [key, val] of Object.entries(cropsMap)) {
-        if (query.includes(key)) {
-            matchedCrop = val;
+    for (const c of availableCrops) {
+        if (query.includes(c.name.toLowerCase())) {
+            matchedCrop = c.name;
             break;
         }
     }
@@ -61,7 +222,7 @@ function handleUniversalSearch() {
 
     // Extract potential location if not purely crop
     const cleanedLocation = query
-        .replace(/rice|paddy|wheat|corn|maize|cotton|tomato/gi, "")
+        .replace(/rice|paddy|wheat|corn|maize|cotton|tomato|potato|olive|grapes/gi, "")
         .replace(/in|at|farm|field|district|crop|for/gi, "")
         .trim();
 
@@ -78,15 +239,9 @@ function handleUniversalSearch() {
 
 function selectCrop(cropName) {
     selectedCropName = cropName;
-    document.querySelectorAll(".commodity-btn").forEach(btn => {
-        if (btn.getAttribute("data-crop") === cropName) {
-            btn.classList.add("border-agro-500", "bg-agro-50", "border-2");
-            btn.classList.remove("border-slate-200", "bg-white");
-        } else {
-            btn.classList.remove("border-agro-500", "bg-agro-50", "border-2");
-            btn.classList.add("border-slate-200", "bg-white");
-        }
-    });
+
+    // Update active style on all buttons
+    renderCommodityGrid();
 
     const fieldTitle = document.getElementById("field-card-title");
     if (fieldTitle) fieldTitle.innerText = `${cropName} Field Block #1`;
