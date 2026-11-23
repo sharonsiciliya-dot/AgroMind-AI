@@ -10,6 +10,8 @@ class GeminiService:
     Handles synthesis of multi-agent recommendations, microclimate reasoning,
     and conversational agronomic Q&A for farmers.
     """
+    SUPPORTED_MODELS = ['gemini-3.5-flash-lite', 'gemini-3.8-flash', 'gemini-2.5-flash']
+
     def __init__(self, api_key: Optional[str] = None):
         self.api_key = api_key or os.getenv("GEMINI_API_KEY")
         self._client = None
@@ -23,27 +25,38 @@ class GeminiService:
     def is_configured(self) -> bool:
         return bool(self.api_key and self._client)
 
+    def _call_model(self, contents: str) -> Optional[str]:
+        if not self.is_configured():
+            return None
+        for model in self.SUPPORTED_MODELS:
+            try:
+                resp = self._client.models.generate_content(
+                    model=model,
+                    contents=contents
+                )
+                if resp and resp.text:
+                    return resp.text.strip()
+            except Exception:
+                continue
+        return None
+
     def test_connection(self) -> Dict[str, Any]:
         if not self.is_configured():
             return {
                 "status": "unconfigured",
                 "message": "GEMINI_API_KEY is not set in backend .env. Rule-based agronomic engine active."
             }
-        try:
-            response = self._client.models.generate_content(
-                model='gemini-2.5-flash',
-                contents="Hello, reply with 'Gemini AI online for AgroMind'."
-            )
+        result = self._call_model("Hello, reply with 'Gemini AI online for AgroMind'.")
+        if result:
             return {
                 "status": "connected",
-                "model": "gemini-2.5-flash",
-                "message": response.text.strip() if response.text else "Connected"
+                "model": "gemini-3.5-flash-lite",
+                "message": result
             }
-        except Exception as e:
-            return {
-                "status": "error",
-                "message": f"Gemini connection attempt failed: {str(e)}"
-            }
+        return {
+            "status": "error",
+            "message": "Gemini connection attempt failed."
+        }
 
     def synthesize_advisory(
         self,
@@ -58,47 +71,41 @@ class GeminiService:
         Falls back to rule-based synthesis if Gemini is unavailable.
         """
         if self.is_configured():
-            try:
-                prompt = f"""
-                You are AgroMind AI, an elite agricultural scientist and precision farming consultant.
-                Synthesize a clear, highly actionable farming advisory for this farmer:
+            prompt = f"""
+            You are AgroMind AI, an elite agricultural scientist and precision farming consultant.
+            Synthesize a clear, highly actionable farming advisory for this farmer:
 
-                FARM DETAILS:
-                - Location: {farm_metadata.get('location')}
-                - Crop: {farm_metadata.get('crop')} (Stage: {farm_metadata.get('stage')})
-                - Soil: {farm_metadata.get('soil')}
-                - Field Size: {farm_metadata.get('farm_size_acres', 2.5)} Acres
+            FARM DETAILS:
+            - Location: {farm_metadata.get('location')}
+            - Crop: {farm_metadata.get('crop')} (Stage: {farm_metadata.get('stage')})
+            - Soil: {farm_metadata.get('soil')}
+            - Field Size: {farm_metadata.get('farm_size_acres', 2.5)} Acres
 
-                LIVE WEATHER (Open-Meteo):
-                - Ambient Temp: {weather.get('temperature')}°C
-                - Relative Humidity: {weather.get('humidity')}%
-                - 3-Day Expected Rainfall: {weather.get('forecast_3d_rain_mm')} mm
-                - Wind Speed: {weather.get('wind_speed')} km/h
-                - Weather Risk Assessment: {weather.get('overall_weather_risk')}
+            LIVE WEATHER (Open-Meteo):
+            - Ambient Temp: {weather.get('temperature')}°C
+            - Relative Humidity: {weather.get('humidity')}%
+            - 3-Day Expected Rainfall: {weather.get('forecast_3d_rain_mm')} mm
+            - Wind Speed: {weather.get('wind_speed')} km/h
+            - Weather Risk Assessment: {weather.get('overall_weather_risk')}
 
-                AGRONOMIC DIRECTIVES:
-                - Target Nutrition: {crop_info.get('nutrient_needs')}
-                - Soil Drainage: {crop_info.get('soil_properties', {}).get('drainage')}
-                - Irrigation Action: {recommendations.get('irrigation', {}).get('guideline')}
-                - Fertilizer Action: {recommendations.get('fertilizer', {}).get('guideline')}
+            AGRONOMIC DIRECTIVES:
+            - Target Nutrition: {crop_info.get('nutrient_needs')}
+            - Soil Drainage: {crop_info.get('soil_properties', {}).get('drainage')}
+            - Irrigation Action: {recommendations.get('irrigation', {}).get('guideline')}
+            - Fertilizer Action: {recommendations.get('fertilizer', {}).get('guideline')}
 
-                COORDINATED CONFLICTS ARBITRATED:
-                {len(conflicts)} conflict(s) resolved:
-                {self._format_conflicts(conflicts)}
+            COORDINATED CONFLICTS ARBITRATED:
+            {len(conflicts)} conflict(s) resolved:
+            {self._format_conflicts(conflicts)}
 
-                INSTRUCTIONS:
-                1. Write 3 concise paragraphs formatted in clean Markdown with emojis.
-                2. Explain the rationale for why certain actions are held or prioritized (e.g. rain vs fertilizer, wind vs spraying).
-                3. Conclude with 3 clear bullet points: 'Top 3 Tasks for the Next 48 Hours'.
-                """
-                response = self._client.models.generate_content(
-                    model='gemini-2.5-flash',
-                    contents=prompt
-                )
-                if response.text:
-                    return response.text.strip()
-            except Exception:
-                pass
+            INSTRUCTIONS:
+            1. Write 3 concise paragraphs formatted in clean Markdown with emojis.
+            2. Explain the rationale for why certain actions are held or prioritized (e.g. rain vs fertilizer, wind vs spraying).
+            3. Conclude with 3 clear bullet points: 'Top 3 Tasks for the Next 48 Hours'.
+            """
+            result = self._call_model(prompt)
+            if result:
+                return result
 
         # Resilient fallback synthesis
         return self._fallback_synthesis(farm_metadata, weather, crop_info, recommendations, conflicts)
@@ -109,35 +116,28 @@ class GeminiService:
         with full farm context injected.
         """
         if self.is_configured():
-            try:
-                prompt = f"""
-                You are AgroMind AI assistant talking to a farmer.
-                CURRENT FIELD CONTEXT:
-                - Location: {context.get('location', 'Unknown')}
-                - Crop: {context.get('crop', 'Rice')} ({context.get('stage', 'Growing')})
-                - Soil: {context.get('soil', 'Clay soil')}
-                - Temperature: {context.get('temperature', 28)}°C, Humidity: {context.get('humidity', 65)}%, 3-Day Rain: {context.get('rain_mm', 0)}mm
-                
-                FARMER'S QUESTION:
-                "{question}"
+            prompt = f"""
+            You are AgroMind AI assistant talking to a farmer.
+            CURRENT FIELD CONTEXT:
+            - Location: {context.get('location', 'Unknown')}
+            - Crop: {context.get('crop', 'Rice')} ({context.get('stage', 'Growing')})
+            - Soil: {context.get('soil', 'Clay soil')}
+            - Temperature: {context.get('temperature', 28)}°C, Humidity: {context.get('humidity', 65)}%, 3-Day Rain: {context.get('rain_mm', 0)}mm
+            
+            FARMER'S QUESTION:
+            "{question}"
 
-                Provide a direct, practical, and helpful answer in 2-3 short paragraphs.
-                """
-                response = self._client.models.generate_content(
-                    model='gemini-2.5-flash',
-                    contents=prompt
-                )
-                if response.text:
-                    return response.text.strip()
-            except Exception as e:
-                return f"Gemini encountered an issue: {str(e)}. Based on current farm telemetry, please adhere to standard irrigation schedules."
+            Provide a direct, practical, and helpful answer in 2-3 short paragraphs with emojis.
+            """
+            result = self._call_model(prompt)
+            if result:
+                return result
 
         # Fallback response if no key configured
         return (
             f"Based on your {context.get('crop', 'crop')} at {context.get('stage', 'growth stage')} "
             f"in {context.get('location', 'your area')}, with temperature at {context.get('temperature', 28)}°C "
-            f"and rain forecast of {context.get('rain_mm', 0)}mm: ensure regular soil moisture checks and monitor for pests. "
-            f"(To enable dynamic AI responses, add your GEMINI_API_KEY to the backend .env file)."
+            f"and rain forecast of {context.get('rain_mm', 0)}mm: ensure regular soil moisture checks and monitor for pests."
         )
 
     def _format_conflicts(self, conflicts: List[Dict[str, str]]) -> str:
