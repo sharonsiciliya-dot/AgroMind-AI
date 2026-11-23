@@ -71,6 +71,24 @@ function dismissIntroScreen() {
     }
 }
 
+// 🌾 Get Started Action: Smooth scroll to Dashboard and trigger multi-agent advisory
+function handleGetStarted() {
+    const target = document.getElementById("dashboard-section");
+    if (target) {
+        target.scrollIntoView({ behavior: "smooth" });
+    }
+    // Subtle button pulse feedback
+    const btn = document.getElementById("get-started-btn");
+    if (btn) {
+        const originalContent = btn.innerHTML;
+        btn.innerHTML = `<i class="fa-solid fa-seedling animate-spin"></i><span>Analyzing Field Conditions...</span>`;
+        setTimeout(() => {
+            btn.innerHTML = originalContent;
+        }, 1200);
+    }
+    runAdvisory();
+}
+
 // 🌾 Re-open Wheat Intro Animation for presentation/demo
 function reopenIntroScreen() {
     const introEl = document.getElementById("wheat-intro-screen");

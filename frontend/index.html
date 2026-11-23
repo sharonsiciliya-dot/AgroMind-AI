@@ -40,7 +40,7 @@
         body {
             background-color: #f7f9f6;
             color: #1e293b;
-            overflow-x: hidden;
+            scroll-behavior: smooth;
         }
         .glass-card {
             background: rgba(255, 255, 255, 0.96);
@@ -59,151 +59,80 @@
             border-radius: 9999px;
         }
 
-        /* 🌾 WHEAT MOTION ANIMATIONS */
-        @keyframes wheatBreeze {
-            0% { transform: scale(1.05) rotate(0deg) translate(0, 0); }
-            33% { transform: scale(1.07) rotate(0.8deg) translate(-6px, -4px); }
-            66% { transform: scale(1.06) rotate(-0.8deg) translate(4px, 2px); }
-            100% { transform: scale(1.05) rotate(0deg) translate(0, 0); }
+        /* 🌾 CONTINUOUS MOVING WHEAT ANIMATIONS */
+        @keyframes wheatWindMotion {
+            0% { transform: scale(1.04) rotate(0deg) translate(0, 0); }
+            25% { transform: scale(1.06) rotate(1deg) translate(-8px, -5px); }
+            50% { transform: scale(1.05) rotate(-0.5deg) translate(5px, 2px); }
+            75% { transform: scale(1.07) rotate(0.8deg) translate(-4px, -3px); }
+            100% { transform: scale(1.04) rotate(0deg) translate(0, 0); }
         }
-        @keyframes stalkSway1 {
+        @keyframes stalkSwayFast {
             0%, 100% { transform: rotate(0deg) translateY(0); }
-            50% { transform: rotate(3.5deg) translateY(-8px); }
+            50% { transform: rotate(5deg) translateY(-10px); }
         }
-        @keyframes stalkSway2 {
+        @keyframes stalkSwaySlow {
             0%, 100% { transform: rotate(0deg) translateY(0); }
-            50% { transform: rotate(-4.2deg) translateY(-6px); }
+            50% { transform: rotate(-5.5deg) translateY(-8px); }
         }
         @keyframes floatPill1 {
             0%, 100% { transform: translateY(0px) scale(1); }
-            50% { transform: translateY(-10px) scale(1.02); }
+            50% { transform: translateY(-12px) scale(1.03); }
         }
         @keyframes floatPill2 {
             0%, 100% { transform: translateY(0px) scale(1); }
-            50% { transform: translateY(8px) scale(0.99); }
+            50% { transform: translateY(10px) scale(0.98); }
         }
-        @keyframes pulseGlow {
-            0%, 100% { box-shadow: 0 0 15px rgba(255, 255, 255, 0.4); }
-            50% { box-shadow: 0 0 30px rgba(234, 179, 8, 0.6); }
+        @keyframes glowButton {
+            0%, 100% { box-shadow: 0 0 15px rgba(255, 255, 255, 0.3), 0 4px 15px rgba(0,0,0,0.2); }
+            50% { box-shadow: 0 0 30px rgba(234, 179, 8, 0.7), 0 8px 25px rgba(0,0,0,0.3); }
+        }
+        @keyframes radarPulse {
+            0%, 100% { transform: scale(0.96); opacity: 0.65; }
+            50% { transform: scale(1.06); opacity: 0.95; filter: drop-shadow(0 0 18px rgba(251, 191, 36, 0.5)); }
+        }
+        @keyframes radarRotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
-        .animate-wheat-bg {
-            animation: wheatBreeze 16s ease-in-out infinite;
+        .animate-wheat-wind {
+            animation: wheatWindMotion 12s ease-in-out infinite;
         }
-        .animate-stalk-1 {
-            animation: stalkSway1 4.5s ease-in-out infinite;
+        .animate-stalk-fast {
+            animation: stalkSwayFast 3.6s ease-in-out infinite;
             transform-origin: bottom center;
         }
-        .animate-stalk-2 {
-            animation: stalkSway2 5.5s ease-in-out infinite;
+        .animate-stalk-slow {
+            animation: stalkSwaySlow 4.8s ease-in-out infinite;
             transform-origin: bottom center;
         }
         .animate-float-1 {
-            animation: floatPill1 3.8s ease-in-out infinite;
+            animation: floatPill1 3.2s ease-in-out infinite;
         }
         .animate-float-2 {
-            animation: floatPill2 4.2s ease-in-out infinite;
+            animation: floatPill2 3.8s ease-in-out infinite;
         }
-        .animate-btn-glow {
-            animation: pulseGlow 3s infinite;
+        .animate-glow {
+            animation: glowButton 2.5s infinite;
+        }
+        .animate-radar {
+            animation: radarPulse 4s ease-in-out infinite;
+        }
+        .animate-radar-spin {
+            animation: radarRotate 20s linear infinite;
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col font-sans relative">
+<body class="min-h-screen flex flex-col font-sans">
 
-    <!-- 🌾 SCREEN 1: ANIMATED WHEAT INTRO LANDING SCREEN (Matching Dribbble Left Screen) -->
-    <div id="wheat-intro-screen" class="fixed inset-0 z-[100] bg-slate-950 flex items-center justify-center transition-all duration-700 ease-in-out">
-        <div class="relative w-full h-full max-w-md mx-auto sm:my-6 sm:h-[94vh] sm:rounded-3xl sm:border-4 sm:border-white/20 sm:shadow-2xl overflow-hidden flex flex-col justify-between p-6 sm:p-8 bg-black">
-            
-            <!-- Animated Wheat Field Background with swaying breeze -->
-            <div class="absolute inset-0 overflow-hidden pointer-events-none">
-                <div class="absolute inset-0 bg-cover bg-center animate-wheat-bg opacity-85" 
-                     style="background-image: url('https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=1200&q=85');">
-                </div>
-                <!-- Soft Warm Golden Sunburst Gradient Overlay -->
-                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-amber-950/40"></div>
-                <!-- Top Light Blur for Header -->
-                <div class="absolute top-0 inset-x-0 h-44 bg-gradient-to-b from-white/95 via-white/80 to-transparent"></div>
-            </div>
-
-            <!-- Foreground Swaying Wheat Visual Elements -->
-            <div class="absolute bottom-16 -left-6 text-7xl text-amber-200/40 pointer-events-none animate-stalk-1 select-none">
-                🌾
-            </div>
-            <div class="absolute bottom-24 -right-4 text-8xl text-amber-300/35 pointer-events-none animate-stalk-2 select-none">
-                🌾
-            </div>
-
-            <!-- Top Header (Inside Wheat Screen) -->
-            <div class="relative z-10 pt-2">
-                <div class="flex items-center space-x-2.5">
-                    <div class="w-10 h-10 rounded-xl bg-agro-700 flex items-center justify-center text-white shadow-md">
-                        <i class="fa-solid fa-seedling text-lg"></i>
-                    </div>
-                    <div>
-                        <span class="text-xs font-bold uppercase tracking-widest text-agro-900 block">AgroMind AI</span>
-                    </div>
-                </div>
-
-                <div class="mt-4">
-                    <h2 class="text-2xl sm:text-3xl font-black text-slate-900 uppercase tracking-tight leading-tight">
-                        The New Era Of<br>
-                        <span class="text-agro-700">Agriculture</span>
-                    </h2>
-                    <p class="text-xs sm:text-sm text-slate-600 mt-2 font-medium max-w-[280px] leading-relaxed">
-                        Sustainable farming solutions for a better tomorrow. Coordinated multi-agent precision intelligence.
-                    </p>
-                </div>
-            </div>
-
-            <!-- Floating Sensor Badges (Matching Mockup with Living Move Effect) -->
-            <div class="relative z-10 space-y-6 my-auto py-10 pointer-events-none">
-                
-                <!-- Floating Badge 1: Growth -->
-                <div class="animate-float-1 flex items-center space-x-2.5 bg-white/80 backdrop-blur-md px-4 py-2.5 rounded-full border border-white/60 shadow-lg shadow-black/10 w-fit">
-                    <div class="w-7 h-7 rounded-full bg-agro-600 text-white flex items-center justify-center text-xs shadow-inner">
-                        <i class="fa-solid fa-arrow-trend-up"></i>
-                    </div>
-                    <div class="pr-2">
-                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Real-time</span>
-                        <span class="text-xs font-extrabold text-slate-900">Growth: <strong class="text-agro-700">12 cm</strong></span>
-                    </div>
-                </div>
-
-                <!-- Floating Badge 2: Moisture (Offset to right) -->
-                <div class="animate-float-2 ml-auto flex items-center space-x-2.5 bg-white/80 backdrop-blur-md px-4 py-2.5 rounded-full border border-white/60 shadow-lg shadow-black/10 w-fit">
-                    <div class="w-7 h-7 rounded-full bg-sky-500 text-white flex items-center justify-center text-xs shadow-inner">
-                        <i class="fa-solid fa-droplet"></i>
-                    </div>
-                    <div class="pr-2">
-                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Soil Sensor</span>
-                        <span class="text-xs font-extrabold text-slate-900">Moisture: <strong class="text-sky-600">72%</strong></span>
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- Bottom Action: "Get Started" (Moves to Home Page) -->
-            <div class="relative z-10 pb-4">
-                <button onclick="dismissIntroScreen()" class="w-full py-4 px-6 bg-white/20 hover:bg-white/30 backdrop-blur-xl border border-white/40 text-white font-extrabold text-sm sm:text-base rounded-2xl shadow-2xl transition-all duration-300 hover:scale-[1.02] flex items-center justify-center space-x-3 group animate-btn-glow">
-                    <span>Get Started</span>
-                    <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
-                </button>
-                <div class="text-center mt-3">
-                    <span class="text-[11px] text-white/60 font-medium">Click to launch Precision Farming Dashboard</span>
-                </div>
-            </div>
-
-        </div>
-    </div>
-
-    <!-- Top Header Bar -->
-    <header class="bg-white border-b border-slate-200 sticky top-0 z-50">
+    <!-- Top Navigation Bar -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-2xs">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <div class="flex items-center space-x-3">
-                <button onclick="reopenIntroScreen()" title="Replay Welcome Wheat Animation" class="w-10 h-10 rounded-xl bg-agro-700 hover:bg-agro-800 flex items-center justify-center text-white shadow-md shadow-agro-700/20 transition group">
+                <a href="#wheat-hero-section" class="w-10 h-10 rounded-xl bg-agro-700 hover:bg-agro-800 flex items-center justify-center text-white shadow-md shadow-agro-700/20 transition group">
                     <i class="fa-solid fa-seedling text-lg group-hover:scale-110 transition-transform"></i>
-                </button>
+                </a>
                 <div>
                     <span class="text-xl font-extrabold text-agro-900 tracking-tight">AgroMind <span class="text-agro-500">AI</span></span>
                     <span class="hidden sm:inline-block ml-2 px-2 py-0.5 text-xs font-semibold bg-agro-100 text-agro-700 rounded-full">Multi-Agent</span>
@@ -212,12 +141,6 @@
 
             <!-- Status Badges & Quick Scenarios -->
             <div class="flex items-center space-x-2 sm:space-x-3">
-                <!-- Replay Wheat Intro Button -->
-                <button onclick="reopenIntroScreen()" class="hidden sm:flex items-center space-x-1.5 px-3 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 rounded-lg text-xs font-bold border border-amber-200 transition">
-                    <span>🌾</span>
-                    <span>Wheat Intro</span>
-                </button>
-
                 <div id="backend-status" class="flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
                     <span class="w-2 h-2 rounded-full bg-emerald-500 mr-2 animate-pulse"></span>
                     System Online
@@ -235,14 +158,115 @@
     </header>
 
     <!-- Main Content Container -->
-    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        
-        <!-- Header & Date -->
-        <div class="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-2">
-            <div>
-                <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 flex items-center gap-2">
-                    Hello, Farmers <span class="text-2xl">🌾</span>
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+        <!-- 🌾 1. MOVING WHEAT HERO BANNER WITH 'GET STARTED' DIRECTLY ON HOME PAGE (Matching Mockup Screen 1) -->
+        <section id="wheat-hero-section" class="relative rounded-3xl overflow-hidden shadow-2xl shadow-agro-950/15 border-2 border-amber-900/10 min-h-[380px] sm:min-h-[420px] flex flex-col justify-between p-6 sm:p-10 bg-black">
+            
+            <!-- Animated Moving Wheat Background -->
+            <div class="absolute inset-0 overflow-hidden pointer-events-none">
+                <div class="absolute inset-0 bg-cover bg-center animate-wheat-wind opacity-85 scale-105" 
+                     style="background-image: url('https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=1600&q=85');">
+                </div>
+                <!-- Cinematic Gradient Overlays -->
+                <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-black/20"></div>
+                <div class="absolute inset-0 bg-gradient-to-r from-black/85 via-black/40 to-transparent"></div>
+            </div>
+
+            <!-- Foreground Animated Swaying Wheat Ears -->
+            <div class="absolute bottom-6 left-12 text-7xl sm:text-8xl text-amber-200/50 pointer-events-none animate-stalk-fast select-none">
+                🌾
+            </div>
+            <div class="absolute bottom-10 right-16 text-8xl sm:text-9xl text-amber-300/40 pointer-events-none animate-stalk-slow select-none">
+                🌾
+            </div>
+            <div class="absolute bottom-2 left-1/3 text-6xl text-amber-100/30 pointer-events-none animate-stalk-fast select-none">
+                🌾
+            </div>
+
+            <!-- Agritech AI Scanning Disk (Matches reference mockup Screen 1 overlay) -->
+            <div class="absolute right-6 top-8 sm:right-28 sm:top-14 w-32 h-32 sm:w-48 sm:h-48 rounded-full border border-amber-300/40 bg-amber-400/10 backdrop-blur-[2px] animate-radar pointer-events-none flex items-center justify-center">
+                <div class="w-20 h-20 sm:w-32 sm:h-32 rounded-full border border-dashed border-amber-300/60 animate-radar-spin"></div>
+                <div class="absolute w-2.5 h-2.5 rounded-full bg-amber-400 shadow-lg shadow-amber-400/80 animate-ping"></div>
+                <div class="absolute -bottom-2 px-2 py-0.5 rounded-full bg-black/60 border border-amber-400/40 text-[9px] font-bold text-amber-300 uppercase tracking-widest">
+                    AI Scan Active
+                </div>
+            </div>
+
+            <!-- Top Header & Brand -->
+            <div class="relative z-10 max-w-xl">
+                <div class="flex items-center space-x-2.5 mb-3">
+                    <div class="w-9 h-9 rounded-xl bg-agro-600 text-white flex items-center justify-center font-bold text-base shadow-md">
+                        <i class="fa-solid fa-seedling"></i>
+                    </div>
+                    <span class="text-xs font-black tracking-widest text-amber-300 uppercase">AgroMind AI Ecosystem</span>
+                </div>
+
+                <h1 class="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight uppercase drop-shadow-md">
+                    The New Era Of<br>
+                    <span class="text-amber-400">Agriculture</span>
                 </h1>
+                <p class="text-sm sm:text-base text-slate-200 mt-2 font-medium leading-relaxed max-w-md drop-shadow-sm">
+                    Sustainable farming solutions for a better tomorrow. Live meteorological telemetry, soil diagnostics & coordinated autonomous agents.
+                </p>
+            </div>
+
+            <!-- Middle: Floating Live Sensor Badges (Moving on the Home Page) -->
+            <div class="relative z-10 py-6 flex flex-wrap gap-4 items-center">
+                <!-- Floating Badge 1: Growth -->
+                <div class="animate-float-1 flex items-center space-x-3 bg-black/40 hover:bg-black/60 backdrop-blur-xl px-4 py-2.5 rounded-2xl border border-white/25 shadow-xl transition">
+                    <div class="w-8 h-8 rounded-xl bg-agro-600 text-white flex items-center justify-center text-xs shadow-inner">
+                        <i class="fa-solid fa-arrow-trend-up"></i>
+                    </div>
+                    <div>
+                        <span class="text-[10px] font-bold text-slate-300 uppercase tracking-wider block">Field Sensor</span>
+                        <span class="text-xs font-extrabold text-white">Growth: <strong class="text-agro-300">12 cm</strong></span>
+                    </div>
+                </div>
+
+                <!-- Floating Badge 2: Moisture -->
+                <div class="animate-float-2 flex items-center space-x-3 bg-black/40 hover:bg-black/60 backdrop-blur-xl px-4 py-2.5 rounded-2xl border border-white/25 shadow-xl transition">
+                    <div class="w-8 h-8 rounded-xl bg-sky-500 text-white flex items-center justify-center text-xs shadow-inner">
+                        <i class="fa-solid fa-droplet"></i>
+                    </div>
+                    <div>
+                        <span class="text-[10px] font-bold text-slate-300 uppercase tracking-wider block">Soil Telemetry</span>
+                        <span class="text-xs font-extrabold text-white">Moisture: <strong class="text-sky-300">72%</strong></span>
+                    </div>
+                </div>
+
+                <!-- Floating Badge 3: Active Weather -->
+                <div class="animate-float-1 hidden sm:flex items-center space-x-3 bg-black/40 hover:bg-black/60 backdrop-blur-xl px-4 py-2.5 rounded-2xl border border-white/25 shadow-xl transition">
+                    <div class="w-8 h-8 rounded-xl bg-amber-500 text-white flex items-center justify-center text-xs shadow-inner">
+                        <i class="fa-solid fa-wind"></i>
+                    </div>
+                    <div>
+                        <span class="text-[10px] font-bold text-slate-300 uppercase tracking-wider block">Wind Velocity</span>
+                        <span class="text-xs font-extrabold text-white">Breeze: <strong class="text-amber-300">14 km/h</strong></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Action: GET STARTED BUTTON (Launches & Scrolls into Home Page Dashboard) -->
+            <div class="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2 border-t border-white/15">
+                <button onclick="handleGetStarted()" id="get-started-btn" class="w-full sm:w-auto px-8 py-4 bg-agro-600 hover:bg-agro-500 text-white font-black text-sm sm:text-base rounded-2xl shadow-2xl transition-all duration-300 hover:scale-105 flex items-center justify-center space-x-3 animate-glow cursor-pointer group">
+                    <span>Get Started</span>
+                    <i class="fa-solid fa-arrow-down group-hover:translate-y-1 transition-transform"></i>
+                </button>
+                <div class="text-xs text-slate-300 flex items-center space-x-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span>Click <strong>Get Started</strong> to analyze current field conditions & run autonomous agents</span>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- 2. FARMER HEADER & PRESET BUTTONS -->
+        <div id="dashboard-section" class="flex flex-col md:flex-row md:items-center justify-between pt-2 pb-1 gap-2">
+            <div>
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 flex items-center gap-2">
+                    Hello, Farmers <span class="text-2xl">🌾</span>
+                </h2>
                 <p class="text-sm text-slate-500 mt-0.5 flex items-center gap-2">
                     <span id="current-date-text">Sunday, 01 Dec 2024</span>
                     <span>•</span>
@@ -260,10 +284,10 @@
             </div>
         </div>
 
-        <!-- 🔍 SEARCH & LOCATION CONTROLS BAR -->
-        <div class="glass-card rounded-2xl p-4 shadow-sm mb-6 space-y-3">
+        <!-- 3. SEARCH & LOCATION CONTROLS BAR -->
+        <div class="glass-card rounded-2xl p-4 shadow-sm space-y-3">
             <div class="flex flex-col md:flex-row gap-3">
-                <!-- 1. Universal Search Input -->
+                <!-- Universal Search Input -->
                 <div class="relative flex-1">
                     <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-agro-600 text-sm">
                         <i class="fa-solid fa-magnifying-glass"></i>
@@ -284,7 +308,7 @@
                     </button>
                 </div>
 
-                <!-- 2. Interactive Location Selector & GPS Auto-Detect -->
+                <!-- Interactive Location Selector & GPS Auto-Detect -->
                 <div class="flex items-center space-x-2">
                     <div class="relative min-w-[200px]">
                         <select id="quick-location-select" onchange="handleLocationSelect(this.value)" class="w-full pl-8 pr-8 py-2.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 focus:outline-none focus:border-agro-600 appearance-none">
@@ -321,7 +345,7 @@
                 </div>
             </div>
 
-            <!-- 3. Category & Filter Pills Bar -->
+            <!-- Category & Filter Pills Bar -->
             <div class="flex items-center space-x-2 overflow-x-auto custom-scrollbar pb-1 pt-1 text-xs">
                 <span class="font-bold text-slate-400 uppercase tracking-wider text-[11px] flex-shrink-0 mr-1">
                     <i class="fa-solid fa-filter text-agro-600 mr-1"></i>Filter:
@@ -347,12 +371,13 @@
             </div>
         </div>
 
+        <!-- 4. DASHBOARD GRID (WEATHER, COMMODITIES, ADVISORY) -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
             <!-- LEFT COLUMN: LIVE WEATHER & COMMODITIES (5 cols) -->
             <div class="lg:col-span-5 space-y-6">
 
-                <!-- 1. Hero Weather Card -->
+                <!-- Weather Hero Card -->
                 <div class="hero-weather-bg rounded-3xl p-6 text-white shadow-xl shadow-agro-900/10 relative overflow-hidden">
                     <div class="absolute -right-8 -top-8 w-40 h-40 bg-white/5 rounded-full blur-2xl pointer-events-none"></div>
 
@@ -404,7 +429,7 @@
                     </div>
                 </div>
 
-                <!-- 2. Commodities & Food Selector with Filters & "+ Add Food Item" -->
+                <!-- Commodities & Food Selector with Filters & "+ Add Food Item" -->
                 <div class="glass-card rounded-2xl p-5 shadow-sm">
                     <div class="flex items-center justify-between mb-3">
                         <div class="flex items-center space-x-2">
@@ -424,7 +449,7 @@
                     </div>
                 </div>
 
-                <!-- 3. Farm Setup Form -->
+                <!-- Farm Setup Form -->
                 <div class="glass-card rounded-2xl p-5 shadow-sm space-y-4">
                     <h2 class="text-sm font-bold text-slate-800 uppercase tracking-wide flex items-center gap-2">
                         <i class="fa-solid fa-sliders text-agro-600"></i> Field Parameters
@@ -471,7 +496,7 @@
                     </button>
                 </div>
 
-                <!-- 4. "My Fields" Card -->
+                <!-- "My Fields" Card -->
                 <div class="glass-card rounded-2xl p-5 shadow-sm border border-agro-100">
                     <div class="flex items-center justify-between mb-3">
                         <h2 class="text-sm font-bold text-slate-800 uppercase tracking-wide">My Fields Overview</h2>
@@ -492,7 +517,7 @@
             <!-- RIGHT COLUMN: MULTI-AGENT ADVISORY & REASONING (7 cols) -->
             <div class="lg:col-span-7 space-y-6">
 
-                <!-- 1. The Four Agents Ribbon -->
+                <!-- The Four Agents Ribbon -->
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                     <div class="p-3 bg-white rounded-xl border border-slate-200 shadow-sm flex items-center space-x-2.5">
                         <div class="w-8 h-8 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center font-bold text-sm flex-shrink-0">
@@ -532,7 +557,7 @@
                     </div>
                 </div>
 
-                <!-- 2. Conflict Arbitration Banner (If conflicts exist) -->
+                <!-- Conflict Arbitration Banner (If conflicts exist) -->
                 <div id="conflict-panel" class="hidden">
                     <div class="bg-amber-50 border-l-4 border-amber-500 rounded-xl p-4 shadow-sm">
                         <div class="flex items-start">
@@ -545,7 +570,7 @@
                     </div>
                 </div>
 
-                <!-- 3. Tabbed Advisory Center -->
+                <!-- Tabbed Advisory Center -->
                 <div class="glass-card rounded-2xl shadow-sm overflow-hidden">
                     <!-- Tab Headers -->
                     <div class="flex border-b border-slate-200 bg-slate-50/70 text-xs font-bold text-slate-600 px-4 pt-2 space-x-4">
