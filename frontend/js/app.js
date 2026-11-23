@@ -16,6 +16,13 @@ let availableCrops = [
 ];
 
 document.addEventListener("DOMContentLoaded", () => {
+    // Check if intro screen was previously dismissed
+    const introDismissed = sessionStorage.getItem("agromind_intro_dismissed");
+    const introEl = document.getElementById("wheat-intro-screen");
+    if (introDismissed === "true" && introEl) {
+        introEl.style.display = "none";
+    }
+
     // Set dynamic current date text
     const now = new Date();
     const options = { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' };
@@ -50,6 +57,29 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 });
+
+// 🌾 Intro Screen Dismiss & Transition into Home Page
+function dismissIntroScreen() {
+    const introEl = document.getElementById("wheat-intro-screen");
+    if (introEl) {
+        introEl.style.transform = "translateY(-100%)";
+        introEl.style.opacity = "0";
+        sessionStorage.setItem("agromind_intro_dismissed", "true");
+        setTimeout(() => {
+            introEl.style.display = "none";
+        }, 700);
+    }
+}
+
+// 🌾 Re-open Wheat Intro Animation for presentation/demo
+function reopenIntroScreen() {
+    const introEl = document.getElementById("wheat-intro-screen");
+    if (introEl) {
+        introEl.style.display = "flex";
+        introEl.style.transform = "translateY(0%)";
+        introEl.style.opacity = "1";
+    }
+}
 
 // Load custom crops from localStorage
 function loadSavedCrops() {
@@ -178,7 +208,7 @@ function detectGPSLocation() {
             const lat = position.coords.latitude;
             const lon = position.coords.longitude;
             try {
-                // Reverse geocode with Open-Meteo or BigDataCloud
+                // Reverse geocode with BigDataCloud
                 const geoResp = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`);
                 if (geoResp.ok) {
                     const geoData = await geoResp.json();
